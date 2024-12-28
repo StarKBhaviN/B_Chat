@@ -17,7 +17,6 @@ export const AuthContextProvide = ({ children }) => {
   useEffect(() => {
     // on Auth State changed
     const unSub = onAuthStateChanged(auth, (user) => {
-      console.log("Current user : ", user);
       if (user) {
         setIsAuthenticated(true);
         setUser(user);
@@ -32,11 +31,16 @@ export const AuthContextProvide = ({ children }) => {
 
   const updateUserData = async (userId) => {
     const docRef = doc(db, "users", userId);
-    const docSnap = await getDoc(docRef)
+    const docSnap = await getDoc(docRef);
 
     if (docSnap.exists()) {
-      let data = docSnap.data()
-      setUser({...user, profileName : data.profileName, userId : data.userId})
+      let data = docSnap.data();
+      setUser({
+        ...user,
+        profileName: data.profileName,
+        profileURL: data.profileURL,
+        userId: data.userId,
+      });
     }
   };
 
@@ -61,13 +65,13 @@ export const AuthContextProvide = ({ children }) => {
     }
   };
 
-  const register = async (email, password, profileName) => {
+  const register = async (email, password, profileName, profileURL) => {
     try {
       const resp = await createUserWithEmailAndPassword(auth, email, password);
-      console.log("Respo.user : ", resp?.user);
 
       await setDoc(doc(db, "users", resp?.user?.uid), {
         profileName,
+        profileURL,
         userId: resp?.user?.uid,
       })
         .then(() => {

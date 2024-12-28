@@ -26,10 +26,11 @@ export default function SignUp() {
 
   const emailRef = useRef();
   const passRef = useRef();
+  const profileURLRef = useRef();
   const userNameRef = useRef();
 
   const handleRegister = async () => {
-    if (!emailRef.current || !passRef.current || !userNameRef.current) {
+    if (!emailRef.current || !passRef.current || !userNameRef.current || !profileURLRef.current) {
       Alert.alert("Sign Up", "Please fill all the fields!!");
       return;
     }
@@ -38,11 +39,11 @@ export default function SignUp() {
     let resp = await register(
       emailRef.current,
       passRef.current,
-      userNameRef.current
+      userNameRef.current,
+      profileURLRef.current,
     );
     setLoading(false);
 
-    console.log("Got result : ", resp);
     if (!resp.success) {
       Alert.alert("Sign Up", resp.msg);
     }
@@ -113,6 +114,21 @@ export default function SignUp() {
                   className="flex-1 font-semibold text-neutral-700"
                   placeholder="Password"
                   secureTextEntry
+                  placeholderTextColor={"gray"}
+                />
+              </View>
+            </View>
+            <View className="gap-3">
+              <View
+                style={{ height: hp(7) }}
+                className="flex-row gap-4 bg-neutral-100 items-center rounded-2xl p-2 bg-gray-400"
+              >
+                <Octicons name="lock" size={hp(2.7)} color="gray" />
+                <TextInput
+                  onChangeText={(value) => (profileURLRef.current = value)}
+                  style={{ fontSize: hp(2) }}
+                  className="flex-1 font-semibold text-neutral-700"
+                  placeholder="Profile URL"
                   placeholderTextColor={"gray"}
                 />
               </View>
