@@ -4,9 +4,14 @@ import {
   signInWithEmailAndPassword,
   signOut,
 } from "firebase/auth";
-import { createContext, useContext, useState, useEffect, useId } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 import { auth, db } from "../firebaseConfig";
 import { doc, getDoc, setDoc } from "firebase/firestore";
+
+// Google Sign-In Config
+// GoogleSignin.configure({
+//   webClientId: "586039025777-qpdlags9ljpnt1172jac0ossp16vdlmf.apps.googleusercontent.com",
+// });
 
 export const AuthContext = createContext();
 
@@ -46,7 +51,7 @@ export const AuthContextProvide = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      const resp = await signInWithEmailAndPassword(auth, email, password);
+      await signInWithEmailAndPassword(auth, email, password);
       return { success: true };
     } catch (error) {
       let msg = error.message;
@@ -93,7 +98,14 @@ export const AuthContextProvide = ({ children }) => {
 
   return (
     <AuthContext.Provider
-      value={{ user, isAuthenticated, login, register, logout }}
+      value={{
+        user,
+        isAuthenticated,
+        login,
+        register,
+        // signInWithGoogle,
+        logout,
+      }}
     >
       {children}
     </AuthContext.Provider>

@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   Pressable,
   Alert,
+  StyleSheet,
 } from "react-native";
 import React, { useRef, useState } from "react";
 import {
@@ -13,10 +14,13 @@ import {
   heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
 import { StatusBar } from "expo-status-bar";
-import { Octicons } from "@expo/vector-icons";
+import { AntDesign, Octicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import Loading from "../components/Loading";
 import { useAuth } from "../context/authContext";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { PlayfairDisplay_500Medium } from "@expo-google-fonts/dev";
+import { useFonts } from "expo-font";
 
 export default function SignIn() {
   const router = useRouter();
@@ -25,6 +29,13 @@ export default function SignIn() {
 
   const emailRef = useRef();
   const passRef = useRef();
+
+  const [fontLoaded] = useFonts({
+    PlayfairDisplay_500Medium,
+  });
+  if (!fontLoaded) {
+    return <Text>Loading fonts...</Text>;
+  }
 
   const handleLogin = async () => {
     if (!emailRef.current || !passRef.current) {
@@ -41,35 +52,49 @@ export default function SignIn() {
       Alert.alert("Sign In", resp.msg);
     }
   };
+
+  // const handleGoogleSignIn = async() => {
+  //   try {
+  //     const res = await signInWithGoogle()
+  //     console.log("User Signed In With Google : ",res.user?.uid)
+  //   } catch (error) {
+  //     console.error("User Sign-In Failed : ",res.msg, error)
+  //   }
+  // }
   return (
-    <View className="flex-1">
+    <SafeAreaView className="flex-1">
       <StatusBar style="dark" />
       <View
-        style={{ paddingTop: hp(8), paddingHorizontal: wp(5) }}
-        className="flex-1 gap-12"
+        style={{ paddingHorizontal: wp(6) }}
+        className="flex-1 gap-6 bg-neutral-100"
       >
         <View className="items-center">
           <Image
-            style={{ height: hp(25) }}
+            style={{ height: hp(30) }}
             source={require("../assets/images/Auth/SignIn_bg.jpg")}
           />
         </View>
 
-        <View className="gap-10">
+        <View className="gap-4">
           <Text
-            style={{ fontSize: hp(4) }}
+            style={[styles.myFont, { fontSize: hp(4) }]}
             className="font-bol tracking-wider text-center text-neutral-800"
           >
             Sign In
           </Text>
 
           {/* Inputs */}
-          <View className="gap-0">
+          <View className="gap-3">
             <View
               style={{ height: hp(7) }}
-              className="flex-row gap-4 bg-neutral-100 items-center rounded-2xl"
+              className="flex-row px-4 gap-3 bg-neutral-200 items-center rounded-2xl"
             >
-              <Octicons name="mail" size={hp(2.7)} color="gray" />
+              <Octicons
+                name="mail"
+                size={hp(2.7)}
+                color="gray"
+                style={{ width: wp(6.6), textAlign: "center" }}
+              />
               <TextInput
                 onChangeText={(value) => (emailRef.current = value)}
                 style={{ fontSize: hp(2) }}
@@ -82,9 +107,14 @@ export default function SignIn() {
             <View className="gap-3">
               <View
                 style={{ height: hp(7) }}
-                className="flex-row gap-4 bg-neutral-100 items-center rounded-2xl"
+                className="flex-row px-4 gap-3 bg-neutral-200 items-center rounded-2xl"
               >
-                <Octicons name="lock" size={hp(2.7)} color="gray" />
+                <Octicons
+                  name="lock"
+                  size={hp(2.7)}
+                  color="gray"
+                  style={{ width: wp(6.6), textAlign: "center" }}
+                />
                 <TextInput
                   onChangeText={(value) => (passRef.current = value)}
                   style={{ fontSize: hp(2) }}
@@ -96,7 +126,7 @@ export default function SignIn() {
               </View>
               <Text
                 style={{ fontSize: hp(1.8) }}
-                className="font-semibold text-right text-neutral-500"
+                className="font-semibold text-right text-neutral-600"
               >
                 Forgot Password?
               </Text>
@@ -111,7 +141,7 @@ export default function SignIn() {
                 <TouchableOpacity
                   onPress={handleLogin}
                   style={{ height: hp(6) }}
-                  className="mt-2 mb-2 bg-indigo-500 rounded-xl justify-center items-center"
+                  className="bg-indigo-600 rounded-xl justify-center items-center"
                 >
                   <Text
                     style={{ fontSize: hp(2.7) }}
@@ -141,9 +171,42 @@ export default function SignIn() {
                 </Text>
               </Pressable>
             </View>
+
+            <View className="flex-column items-center">
+              <Text
+                style={{ fontSize: hp(1.8) }}
+                className="mb-2 font-semibold text-ingigo-700"
+              >
+                OR{" "}
+              </Text>
+              <Pressable
+                className="p-4 rounded-2xl px-6 flex-row items-center"
+                style={styles.googleButton}
+                onPress={() => Alert.alert("SignIn","Coming Soon!!!")}
+              >
+                <AntDesign name="google" size={22} color={"orange"} />
+                <Text
+                  style={{ fontSize: hp(1.7) }}
+                  className="font-semibold text-indigo-600 mx-2"
+                >
+                  Sign-In with Google
+                </Text>
+              </Pressable>
+            </View>
           </View>
         </View>
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  myFont: {
+    fontFamily: "PlayfairDisplay_500Medium",
+  },
+  googleButton: {
+    // height : hp(4),
+    backgroundColor: "white",
+    boxShadow : "1px 1px 4px black"
+  },
+});
