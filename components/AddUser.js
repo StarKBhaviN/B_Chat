@@ -20,9 +20,9 @@ import {
   updateDoc,
   where,
 } from "firebase/firestore";
-import { connectionRef, db, usersRef } from "../firebaseConfig";
+import { usersRef } from "../firebaseConfig";
 
-export default function AddUser({ modalVisible, setModalVisible }) {
+export default function AddUser({ modalVisible, setModalVisible, refreshUsers }) {
   const [frndProfile, setFrndProfile] = useState("");
 
   const { user } = useAuth();
@@ -73,6 +73,9 @@ export default function AddUser({ modalVisible, setModalVisible }) {
     });
 
     Alert.alert("Friend Added!!!");
+
+    refreshUsers()
+    setModalVisible(false)
   };
   return (
     <Modal

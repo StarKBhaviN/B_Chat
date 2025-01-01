@@ -223,6 +223,19 @@ export default function SignIn() {
                   Sign-In with Google
                 </Text>
               </Pressable>
+              <Pressable
+                className="mt-2 p-4 rounded-2xl px-6 flex-row items-center"
+                style={styles.googleButton}
+                onPress={() => Alert.alert("SignIn", "Coming Soon!!!")}
+              >
+                <AntDesign name="phone" size={22} color={"green"} />
+                <Text
+                  style={{ fontSize: hp(1.7) }}
+                  className="font-semibold text-indigo-600 mx-2"
+                >
+                  Sign-In with Phone
+                </Text>
+              </Pressable>
             </View>
           </View>
         </View>

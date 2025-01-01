@@ -34,4 +34,4 @@ export const db = getFirestore(app);
 // Firestore References
 export const usersRef = collection(db, "users");
 export const roomsRef = collection(db, "rooms");
-export const connectionRef = collection(db, "connections")
+// export const connectionRef = collection(db, "connections")

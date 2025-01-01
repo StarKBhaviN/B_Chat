@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "586039025777",
+    "project_id": "b-chat-a9a15",
+    "storage_bucket": "b-chat-a9a15.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:586039025777:android:b700d07011ccb76ea7bbd0",
+        "android_client_info": {
+          "package_name": "com.B_Chat.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "586039025777-qpdlags9ljpnt1172jac0ossp16vdlmf.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA9NyoiQCR68yRZE_MlIuHW8zKqJm84XjQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "586039025777-qpdlags9ljpnt1172jac0ossp16vdlmf.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

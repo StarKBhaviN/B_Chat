@@ -1,7 +1,6 @@
 import {
   View,
   Text,
-  Pressable,
   StatusBar,
   ActivityIndicator,
   TouchableOpacity,
@@ -14,7 +13,7 @@ import {
 } from "react-native-responsive-screen";
 import ChatList from "../../components/ChatList";
 import { doc, getDoc, getDocs, query, where } from "firebase/firestore";
-import { connectionRef, usersRef } from "../../firebaseConfig";
+import { usersRef } from "../../firebaseConfig";
 import { useFocusEffect } from "@react-navigation/native";
 import { StyleSheet } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
@@ -28,13 +27,13 @@ export default function Home() {
   const [showModal, setShowModal] = useState(false);
 
   const getUsers = async () => {
+    console.log("Again in get users")
     setLoading(true);
     if (!user?.uid) {
       console.log("User not logged in yet.");
       setLoading(false);
       return;
     }
-    
 
     try {
       // Get the current user's document
@@ -65,10 +64,11 @@ export default function Home() {
   // Fetch users when the screen is focused
   useFocusEffect(
     useCallback(() => {
-      getUsers();
+      if (user?.uid) {
+        getUsers();  // Trigger getUsers whenever the user is available or changes
+      }
     }, [user])
   );
-
 
   return (
     <View className="flex-1 bg-white">
@@ -93,7 +93,11 @@ export default function Home() {
         <MaterialCommunityIcons name="plus" size={hp(4)} color="#fff" />
       </TouchableOpacity>
 
-      <AddUser modalVisible={showModal} setModalVisible={setShowModal} />
+      <AddUser
+        modalVisible={showModal}
+        setModalVisible={setShowModal}
+        refreshUsers={getUsers}
+      />
     </View>
   );
 }

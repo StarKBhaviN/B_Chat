@@ -23,6 +23,9 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import * as ImagePicker from "expo-image-picker";
 
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { doc, setDoc } from "firebase/firestore";
+import { db } from "../firebaseConfig";
+
 
 export default function SignUp() {
   const router = useRouter();
@@ -31,7 +34,6 @@ export default function SignUp() {
   const [profileImage, setProfileImage] = useState(null);
   const [showPass, setShowPass] = useState(false);
 
-  
   const emailRef = useRef();
   const passRef = useRef();
   const profileURLRef = useRef();
@@ -46,68 +48,35 @@ export default function SignUp() {
       quality: 1,
     });
 
+    console.log(result.assets[0].uri);
     if (!result.canceled) {
       setProfileImage(result.assets[0].uri); // Store the image URI in state
     }
   };
 
-  // Function to upload image to Firebase Storage
-  const uploadProfileImage = async (uri, userId) => {
-    const storage = getStorage();
-    const response = await fetch(uri);
-    const blob = await response.blob();
-
-    const imageRef = ref(storage, `profileImages/${userId}`);
-    await uploadBytes(imageRef, blob);
-    const imageURL = await getDownloadURL(imageRef);
-    return imageURL;
-  };
 
   const handleRegister = async () => {
     if (!emailRef.current || !passRef.current || !userNameRef.current) {
       Alert.alert("Sign Up", "Please fill all the fields!!");
       return;
     }
-
+  
     setLoading(true);
-
+  
     let resp = await register(
       emailRef.current,
       passRef.current,
       userNameRef.current,
-      null // Don't pass profileImage yet
+      profileImage
     );
-
-    // Handle profile image upload
-    if (profileImage && resp?.data?.uid) {
-      try {
-        const uploadedImageURL = await uploadProfileImage(
-          profileImage,
-          resp?.data?.uid
-        );
-
-        // Now update the user data in Firestore with the image URL
-        await setDoc(doc(db, "users", resp?.data?.uid), {
-          profileName: userNameRef.current,
-          profileURL: uploadedImageURL, // Update with the uploaded image URL
-          userId: resp?.data?.uid,
-        });
-
-        console.log("User document created successfully with profile image.");
-      } catch (error) {
-        console.error(
-          "Error uploading profile image or saving user data:",
-          error
-        );
-      }
-    }
-
+  
     setLoading(false);
-
+  
     if (!resp.success) {
       Alert.alert("Sign Up", resp.msg);
     }
   };
+  
 
   // const handleRegister = async () => {
   //   if (
