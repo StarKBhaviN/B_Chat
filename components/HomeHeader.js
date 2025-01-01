@@ -16,69 +16,69 @@ import {
 } from "react-native-popup-menu";
 import { MenuItems } from "./CustomMenuItems";
 import { AntDesign, Feather } from "@expo/vector-icons";
+import { router } from "expo-router";
 
 const ios = Platform.OS == "ios";
 
-export default function HomeHeader() {
+export default function HomeHeader({ title = "Chats", showProfile = true }) {
   const { user, logout } = useAuth();
   const { top } = useSafeAreaInsets();
 
-  const handleProfile = () => {};
+  const handleProfile = () => {
+    router.push("profile")
+  };
   const handleLogout = async () => {
     await logout();
   };
   return (
     <View style={[styles.header, { paddingTop: ios ? top : top + 10 }]}>
       <View>
-        <Text style={[styles.text, { fontSize: hp(3) }]}>Chats</Text>
+        <Text style={[styles.text, { fontSize: hp(3) }]}>{title}</Text>
       </View>
 
-      <View>
-        <Menu>
-          <MenuTrigger
-            customStyles={{
-              triggerWrapper: {
-                // trigger wrapper styles
-              },
-            }}
-          >
-            <Image
-              style={{ height: hp(4.5), aspectRatio: 1, borderRadius: 100 }}
-              source={user?.profileURL}
-              placeholder={blurhash}
-              transition={500}
-            />
-          </MenuTrigger>
-          <MenuOptions
-            customStyles={{
-              optionsContainer: {
-                borderRadius: 10,
-                borderCurve: "continuous",
-                marginTop: 38,
-                marginLeft: -30,
-                backgroundColor: "white",
-                shadowOpacity: 0.2,
-                shadowOffset: { width: 0, height: 0 },
-                width : 160
-              },
-            }}
-          >
-            <MenuItems
-              text="Profile"
-              action={handleProfile}
-              value={null}
-              icon={<Feather name="user" size={hp(2.5)} />}
-            />
-            <Divider />
-            <MenuItems
-              text="Sign Out"
-              action={handleLogout}
-              value={null}
-              icon={<AntDesign name="logout" size={hp(2.5)} />}
-            />
-          </MenuOptions>
-        </Menu>
-      </View>
+      {showProfile && (
+        <View>
+          <Menu>
+            <MenuTrigger>
+              <Image
+                style={{
+                  height: hp(4.5),
+                  aspectRatio: 1,
+                  borderRadius: 100,
+                }}
+                source={user?.profileURL}
+                placeholder={blurhash}
+                transition={500}
+              />
+            </MenuTrigger>
+            <MenuOptions
+              customStyles={{
+                optionsContainer: {
+                  borderRadius: 10,
+                  marginTop: 38,
+                  marginLeft: -30,
+                  backgroundColor: "white",
+                  width: 160,
+                  shadowOpacity: 0.2,
+                  shadowOffset: { width: 0, height: 0 },
+                },
+              }}
+            >
+              <MenuItems
+                text="Profile"
+                action={handleProfile}
+                icon={<Feather name="user" size={hp(2.5)} />}
+              />
+              <Divider />
+              <MenuItems
+                text="Sign Out"
+                action={handleLogout}
+                icon={<AntDesign name="logout" size={hp(2.5)} />}
+              />
+            </MenuOptions>
+          </Menu>
+        </View>
+      )}
     </View>
   );
 }

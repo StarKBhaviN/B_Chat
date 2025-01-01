@@ -1,15 +1,28 @@
 import { View, Text } from "react-native";
-import React from "react";
+import React, { useState } from "react";
 import { Stack } from "expo-router";
 import HomeHeader from "../../components/HomeHeader";
 
 export default function _layout() {
+  // const [currentPage, setCurrentPage] = useState("home")
+  
   return (
-    <Stack>
-      <Stack.Screen
-        name="home"
-        options={{ header: () => <HomeHeader /> }}
-      ></Stack.Screen>
-    </Stack>
+    <View style={{ flex: 1 }}>
+      <Stack>
+        <Stack.Screen
+          name="home"
+          options={{
+            header: () => <HomeHeader title="Chats" showProfile={true} />,
+          }}
+          
+        ></Stack.Screen>
+        <Stack.Screen
+          name="profile"
+          options={{
+            header: () => <HomeHeader title="Profile" showProfile={false} />,
+          }}
+        ></Stack.Screen>
+      </Stack>
+    </View>
   );
 }

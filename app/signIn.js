@@ -14,13 +14,15 @@ import {
   heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
 import { StatusBar } from "expo-status-bar";
-import { AntDesign, Octicons } from "@expo/vector-icons";
+import { AntDesign, Entypo, Octicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import Loading from "../components/Loading";
 import { useAuth } from "../context/authContext";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { PlayfairDisplay_500Medium } from "@expo-google-fonts/dev";
 import { useFonts } from "expo-font";
+import { getAuth, sendPasswordResetEmail } from "firebase/auth";
+import ForgotPassword from "../components/ForgotPassword";
 
 export default function SignIn() {
   const router = useRouter();
@@ -30,12 +32,27 @@ export default function SignIn() {
   const emailRef = useRef();
   const passRef = useRef();
 
+  const [modalVisible, setModalVisible] = useState(false);
+  const [showPass, setShowPass] = useState(false);
+
   const [fontLoaded] = useFonts({
     PlayfairDisplay_500Medium,
   });
   if (!fontLoaded) {
     return <Text>Loading fonts...</Text>;
   }
+
+  const auth = getAuth();
+  sendPasswordResetEmail(auth)
+    .then(() => {
+      // Password reset email sent!
+      // ..
+    })
+    .catch((error) => {
+      const errorCode = error.code;
+      const errorMessage = error.message;
+      // ..
+    });
 
   const handleLogin = async () => {
     if (!emailRef.current || !passRef.current) {
@@ -120,37 +137,51 @@ export default function SignIn() {
                   style={{ fontSize: hp(2) }}
                   className="flex-1 font-semibold text-neutral-700"
                   placeholder="Password"
-                  secureTextEntry
+                  secureTextEntry={!showPass}
                   placeholderTextColor={"gray"}
                 />
-              </View>
-              <Text
-                style={{ fontSize: hp(1.8) }}
-                className="font-semibold text-right text-neutral-600"
-              >
-                Forgot Password?
-              </Text>
-            </View>
-
-            <View>
-              {loading ? (
-                <View className="flex-row justify-center">
-                  <Loading size={hp(7)} />
-                </View>
-              ) : (
-                <TouchableOpacity
-                  onPress={handleLogin}
-                  style={{ height: hp(6) }}
-                  className="bg-indigo-600 rounded-xl justify-center items-center"
-                >
-                  <Text
-                    style={{ fontSize: hp(2.7) }}
-                    className="text-white font-bold tracking-wider"
-                  >
-                    Sign In
-                  </Text>
+                <TouchableOpacity onPress={() => setShowPass(!showPass)}>
+                  <Entypo
+                    name={showPass ? "eye" : "eye-with-line"}
+                    size={hp(2.7)}
+                    color={"gray"}
+                  />
                 </TouchableOpacity>
-              )}
+              </View>
+              <TouchableOpacity onPress={() => setModalVisible(true)}>
+                <Text
+                  style={{ fontSize: hp(1.8) }}
+                  className="font-semibold text-right text-neutral-600"
+                >
+                  Forgot Password?
+                </Text>
+              </TouchableOpacity>
+              <View className="mt-0">
+                {loading ? (
+                  <View className="flex-row justify-center">
+                    <Loading size={hp(7)} />
+                  </View>
+                ) : (
+                  <TouchableOpacity
+                    onPress={handleLogin}
+                    style={{ height: hp(6) }}
+                    className="bg-indigo-600 rounded-xl justify-center items-center"
+                  >
+                    <Text
+                      style={{ fontSize: hp(2.7) }}
+                      className="text-white font-bold tracking-wider"
+                    >
+                      Sign In
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            </View>
+            <View>
+              <ForgotPassword
+                setModalVisible={setModalVisible}
+                modalVisible={modalVisible}
+              />
             </View>
 
             {/* SignUp Text */}
@@ -172,7 +203,7 @@ export default function SignIn() {
               </Pressable>
             </View>
 
-            <View className="flex-column items-center">
+            <View className="gap-1 flex-column items-center">
               <Text
                 style={{ fontSize: hp(1.8) }}
                 className="mb-2 font-semibold text-ingigo-700"
@@ -182,7 +213,7 @@ export default function SignIn() {
               <Pressable
                 className="p-4 rounded-2xl px-6 flex-row items-center"
                 style={styles.googleButton}
-                onPress={() => Alert.alert("SignIn","Coming Soon!!!")}
+                onPress={() => Alert.alert("SignIn", "Coming Soon!!!")}
               >
                 <AntDesign name="google" size={22} color={"orange"} />
                 <Text
@@ -207,6 +238,6 @@ const styles = StyleSheet.create({
   googleButton: {
     // height : hp(4),
     backgroundColor: "white",
-    boxShadow : "1px 1px 4px black"
+    boxShadow: "1px 1px 4px black",
   },
 });

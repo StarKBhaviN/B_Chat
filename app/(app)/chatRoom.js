@@ -25,6 +25,7 @@ import {
   onSnapshot,
   orderBy,
   query,
+  serverTimestamp,
   setDoc,
   Timestamp,
 } from "firebase/firestore";
@@ -48,12 +49,23 @@ export default function ChatRoom() {
     const q = query(messagesRef, orderBy("createdAt", "asc"));
 
     let unsub = onSnapshot(q, (snapshot) => {
-      let allMessages = snapshot.docs.map((doc) => doc.data());
+      let allMessages = snapshot.docs.map((doc) => {
+        let data = doc.data();
+        return {
+          ...data,
+          createdAt: data.createdAt || Timestamp.now(),
+        };
+      });
+      // Sort messages by createdAt (fallback in case of delay)
+      allMessages.sort(
+        (a, b) => a.createdAt?.toMillis() - b.createdAt?.toMillis()
+      );
       setMessages([...allMessages]);
     });
 
     const KeyboardDidShowListener = Keyboard.addListener(
-      'keyboardDidShow', updateScrollView
+      "keyboardDidShow",
+      updateScrollView
     );
 
     return () => {
@@ -100,15 +112,16 @@ export default function ChatRoom() {
       textRef.current = "";
       if (inputRef.current) {
         inputRef.current.clear();
-        inputRef.current.focus();  // Maintain focus to keep keyboard open
+        inputRef.current.focus(); // Maintain focus to keep keyboard open
       }
 
+      // Use Firestore Server Timestamp for consistency
       await addDoc(messagesRef, {
         userId: user?.userId,
         text: message,
         profileURL: user?.profileURL,
         senderName: user?.profileName,
-        createdAt: Timestamp.fromDate(new Date()),
+        createdAt: serverTimestamp(),
       });
 
       console.log("Message sent successfully");
@@ -138,7 +151,7 @@ export default function ChatRoom() {
                 style={{ fontSize: hp(1.8) }}
                 className="flex-1 mr-2"
                 returnKeyType="send"
-                onSubmitEditing={handleSendMessage}  // Sends on "Enter"
+                onSubmitEditing={handleSendMessage} // Sends on "Enter"
               />
               <TouchableOpacity
                 onPress={handleSendMessage}

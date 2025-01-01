@@ -31,6 +31,7 @@ export const googleProvider = new GoogleAuthProvider();
 // Initialize Firestore Database
 export const db = getFirestore(app);
 
-// Firestore References (for users and chat rooms)
+// Firestore References
 export const usersRef = collection(db, "users");
 export const roomsRef = collection(db, "rooms");
+export const connectionRef = collection(db, "connections")
