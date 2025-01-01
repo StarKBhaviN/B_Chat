@@ -9,7 +9,17 @@ import {
 import React, { useState } from "react";
 import { StyleSheet } from "react-native";
 import { useAuth } from "../context/authContext";
-import { addDoc, collection, getDocs, query, where } from "firebase/firestore";
+import {
+  addDoc,
+  arrayUnion,
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  query,
+  updateDoc,
+  where,
+} from "firebase/firestore";
 import { connectionRef, db, usersRef } from "../firebaseConfig";
 
 export default function AddUser({ modalVisible, setModalVisible }) {
@@ -23,9 +33,9 @@ export default function AddUser({ modalVisible, setModalVisible }) {
     }
 
     console.log("Friend : ", frndProfile);
-    // Step 1 : Search for user by profile name
-    // const usersRef = collection(db, 'users')
 
+
+    // Step 1 : Search for user by profile name
     const qry = query(usersRef, where("profileName", "==", frndProfile));
     const qrySnapShot = await getDocs(qry);
 
@@ -37,29 +47,29 @@ export default function AddUser({ modalVisible, setModalVisible }) {
     const friend = qrySnapShot.docs[0];
     const frndID = friend.id;
 
-    console.log("Friend ID : ",frndID)
-    console.log("User ID : ",user.userId)
+    console.log("Friend ID : ", frndID);
+    console.log("User ID : ", user.userId);
+    
     // Step 2 : Check if already connected
-    // const connectionRef = collection(db, 'connections')
-    const connectionQry = query(
-      connectionRef,
-      where("userId", "==", user.userId),
-      where("friendId", "==", frndID)
-    );
+    const currentUserRef = doc(usersRef, user?.userId);
+    const friendUserRef = doc(usersRef, frndID);
+    
+    console.log("Friend ID : ", currentUserRef);
+    console.log("User ID : ", friendUserRef);
+    const currentUserDoc = await getDoc(currentUserRef);
+    const friends = currentUserDoc.data()?.friends || [];
 
-    const connectionSnapShot = await getDocs(connectionQry);
-
-    if (!connectionSnapShot.empty) {
+    if (friends.includes(frndID)) {
       Alert.alert("Already added to Friends.");
       return;
     }
 
-    // Step 3 : Add connection to FireBase
-    await addDoc(connectionRef, {
-      userId: user.userId,
-      friendId: frndID,
-      status: "Accepted",
-      createdAt: new Date().toISOString(),
+    // Step 3 : Update both users' friend arrays
+    await updateDoc(currentUserRef, {
+      friends: arrayUnion(frndID),
+    });
+    await updateDoc(friendUserRef, {
+      friends: arrayUnion(user?.userId),
     });
 
     Alert.alert("Friend Added!!!");

@@ -13,8 +13,8 @@ import {
   heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
 import ChatList from "../../components/ChatList";
-import { getDocs, query, where } from "firebase/firestore";
-import { usersRef } from "../../firebaseConfig";
+import { doc, getDoc, getDocs, query, where } from "firebase/firestore";
+import { connectionRef, usersRef } from "../../firebaseConfig";
 import { useFocusEffect } from "@react-navigation/native";
 import { StyleSheet } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
@@ -25,31 +25,42 @@ export default function Home() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const [showModal, setShowModal] = useState(false)
+  const [showModal, setShowModal] = useState(false);
 
   const getUsers = async () => {
-    setLoading(true); // Start loading
+    setLoading(true);
     if (!user?.uid) {
       console.log("User not logged in yet.");
-      setLoading(false); // Stop loading when there's no user
+      setLoading(false);
       return;
     }
-  
+    
+
     try {
-      const qry = query(usersRef, where("userId", "!=", user?.uid));
-      const qrySnapShot = await getDocs(qry);
-      let data = [];
-      qrySnapShot.forEach((doc) => {
-        data.push({ ...doc.data() });
-      });
-      setUsers(data);
-      setLoading(false); // Stop loading
+      // Get the current user's document
+      const currentUserDoc = await getDoc(doc(usersRef, user?.uid));
+      const friendIds = currentUserDoc.data()?.friends || [];
+
+      if (friendIds.length > 0) {
+        // Query to fetch all friends' profiles
+        const userQry = query(usersRef, where("userId", "in", friendIds));
+        const userSnapShot = await getDocs(userQry);
+
+        let data = [];
+        userSnapShot.forEach((doc) => {
+          data.push({ ...doc.data() });
+        });
+
+        setUsers(data);
+      } else {
+        setUsers([]);
+      }
+      setLoading(false);
     } catch (error) {
       console.error("Error fetching users: ", error);
-      setLoading(false); // Stop loading even if there's an error
+      setLoading(false);
     }
   };
-  
 
   // Fetch users when the screen is focused
   useFocusEffect(
@@ -58,9 +69,6 @@ export default function Home() {
     }, [user])
   );
 
-  const handleAddUser = () => {
-    console.log("Add User")
-  }
 
   return (
     <View className="flex-1 bg-white">
@@ -77,29 +85,33 @@ export default function Home() {
       )}
 
       {/* Floating Action Button */}
-      <TouchableOpacity className="bg-indigo-500" style={styles.touchBtn} onPress={() => setShowModal(true)}>
-        <MaterialCommunityIcons  name="plus" size={hp(4)} color="#fff" />
+      <TouchableOpacity
+        className="bg-indigo-500"
+        style={styles.touchBtn}
+        onPress={() => setShowModal(true)}
+      >
+        <MaterialCommunityIcons name="plus" size={hp(4)} color="#fff" />
       </TouchableOpacity>
 
-      <AddUser modalVisible={showModal} setModalVisible={setShowModal}/>
+      <AddUser modalVisible={showModal} setModalVisible={setShowModal} />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   touchBtn: {
-    position : "absolute",
-    bottom : hp(2.5),
-    right : wp(5),
-    width : hp(6.5),
-    height : hp(6.5),
-    borderRadius : hp(3.25),
-    justifyContent : "center",
-    alignItems : "center",
-    elevation : 5,
-    shadowColor : "green",
-    shadowOffset : {width : 0,height : 2},
-    shadowOpacity : 0.3,
-    shadowRadius : 3,
+    position: "absolute",
+    bottom: hp(2.5),
+    right: wp(5),
+    width: hp(6.5),
+    height: hp(6.5),
+    borderRadius: hp(3.25),
+    justifyContent: "center",
+    alignItems: "center",
+    elevation: 5,
+    shadowColor: "green",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
   },
 });
