@@ -32,9 +32,6 @@ export default function AddUser({ modalVisible, setModalVisible, refreshUsers })
       return;
     }
 
-    console.log("Friend : ", frndProfile);
-
-
     // Step 1 : Search for user by profile name
     const qry = query(usersRef, where("profileName", "==", frndProfile));
     const qrySnapShot = await getDocs(qry);
@@ -46,16 +43,11 @@ export default function AddUser({ modalVisible, setModalVisible, refreshUsers })
 
     const friend = qrySnapShot.docs[0];
     const frndID = friend.id;
-
-    console.log("Friend ID : ", frndID);
-    console.log("User ID : ", user.userId);
     
     // Step 2 : Check if already connected
     const currentUserRef = doc(usersRef, user?.userId);
     const friendUserRef = doc(usersRef, frndID);
     
-    console.log("Friend ID : ", currentUserRef);
-    console.log("User ID : ", friendUserRef);
     const currentUserDoc = await getDoc(currentUserRef);
     const friends = currentUserDoc.data()?.friends || [];
 
@@ -76,6 +68,7 @@ export default function AddUser({ modalVisible, setModalVisible, refreshUsers })
 
     refreshUsers()
     setModalVisible(false)
+    setFrndProfile("")
   };
   return (
     <Modal

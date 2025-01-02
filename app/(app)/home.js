@@ -27,9 +27,8 @@ export default function Home() {
   const [showModal, setShowModal] = useState(false);
 
   const getUsers = async () => {
-    console.log("Again in get users")
     setLoading(true);
-    if (!user?.uid) {
+    if (!user?.userId) {
       console.log("User not logged in yet.");
       setLoading(false);
       return;
@@ -37,7 +36,7 @@ export default function Home() {
 
     try {
       // Get the current user's document
-      const currentUserDoc = await getDoc(doc(usersRef, user?.uid));
+      const currentUserDoc = await getDoc(doc(usersRef, user?.userId));
       const friendIds = currentUserDoc.data()?.friends || [];
 
       if (friendIds.length > 0) {
@@ -50,6 +49,7 @@ export default function Home() {
           data.push({ ...doc.data() });
         });
 
+        
         setUsers(data);
       } else {
         setUsers([]);
@@ -64,8 +64,8 @@ export default function Home() {
   // Fetch users when the screen is focused
   useFocusEffect(
     useCallback(() => {
-      if (user?.uid) {
-        getUsers();  // Trigger getUsers whenever the user is available or changes
+      if (user?.userId) {
+        getUsers(); // Trigger getUsers whenever the user is available or changes
       }
     }, [user])
   );

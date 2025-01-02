@@ -24,23 +24,30 @@ import * as ImagePicker from "expo-image-picker";
 
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { doc, setDoc } from "firebase/firestore";
-import { db } from "../firebaseConfig";
-
+import { auth, db } from "../firebaseConfig";
+import axios from "axios";
 
 export default function SignUp() {
   const router = useRouter();
   const { register } = useAuth();
   const [loading, setLoading] = useState(false);
-  const [profileImage, setProfileImage] = useState(null);
+  const [image, setImage] = useState(null);
+  const [uploading, setUploading] = useState(false);
   const [showPass, setShowPass] = useState(false);
+  const [finalImage, setFinalImage] = useState("");
 
   const emailRef = useRef();
   const passRef = useRef();
   const profileURLRef = useRef();
   const userNameRef = useRef();
 
-  // Handle image selection from gallery
   const pickImage = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== "granted") {
+      Alert.alert("Permission Denied", "Please allow access to your photos.");
+      return;
+    }
+
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
@@ -48,60 +55,83 @@ export default function SignUp() {
       quality: 1,
     });
 
-    console.log(result.assets[0].uri);
     if (!result.canceled) {
-      setProfileImage(result.assets[0].uri); // Store the image URI in state
+      setImage(result.assets[0].uri);
     }
   };
 
+  // Upload Image to Cloudinary
+  const uploadImage = async () => {
+    if (!image) {
+      Alert.alert("Please select an image first.");
+      return;
+    }
+
+    const data = new FormData();
+    data.append("file", {
+      uri: image,
+      type: "image/*",
+      name: "profile.jpg",
+    });
+    data.append("upload_preset", "B_Chat"); // Replace with your Cloudinary preset
+
+    setUploading(true);
+
+    try {
+      const response = await axios.post(
+        "https://api.cloudinary.com/v1_1/dzjyqifhh/image/upload",
+        data,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      const imageUrl = response.data.secure_url;
+      setFinalImage(imageUrl);
+      return imageUrl;
+    } catch (error) {
+      console.error("Upload Error: ", error);
+      Alert.alert("Upload Failed. Try again.");
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const handleRegister = async () => {
-    if (!emailRef.current || !passRef.current || !userNameRef.current) {
+    if (!emailRef.current?.trim() ||
+    !passRef.current?.trim() ||
+    !userNameRef.current?.trim()) {
       Alert.alert("Sign Up", "Please fill all the fields!!");
       return;
     }
-  
+
     setLoading(true);
-  
+
+    // Wait for image upload
+    const uploadedImageUrl = await uploadImage();
+
+    if (!uploadedImageUrl) {
+      Alert.alert("Sign Up", "Image upload failed. Please try again.");
+      setLoading(false);
+      return;
+    }
+
     let resp = await register(
       emailRef.current,
       passRef.current,
       userNameRef.current,
-      profileImage
+      uploadedImageUrl
     );
-  
+
     setLoading(false);
-  
+
     if (!resp.success) {
       Alert.alert("Sign Up", resp.msg);
     }
   };
-  
 
-  // const handleRegister = async () => {
-  //   if (
-  //     !emailRef.current ||
-  //     !passRef.current ||
-  //     !userNameRef.current ||
-  //     !image
-  //   ) {
-  //     Alert.alert("Sign Up", "Please fill all the fields and upload image!!");
-  //     return;
-  //   }
-  //   setLoading(true);
-
-  //   let resp = await register(
-  //     emailRef.current,
-  //     passRef.current,
-  //     userNameRef.current,
-  //     image
-  //   );
-  //   setLoading(false);
-
-  //   if (!resp.success) {
-  //     Alert.alert("Sign Up", resp.msg);
-  //   }
-  // };
   return (
     <SafeAreaView className="flex-1 bg-neutral-100">
       <CustomKeyboardView>
@@ -137,7 +167,7 @@ export default function SignUp() {
                     color="gray"
                   />
                   <TextInput
-                    onChangeText={(value) => (userNameRef.current = value)}
+                    onChangeText={(value) => (userNameRef.current = value || "")}
                     style={{ fontSize: hp(2) }}
                     className="flex-1 font-semibold text-neutral-700"
                     placeholder="Name"
@@ -157,7 +187,7 @@ export default function SignUp() {
                   color="gray"
                 />
                 <TextInput
-                  onChangeText={(value) => (emailRef.current = value)}
+                  onChangeText={(value) => (emailRef.current = value || "")}
                   style={{ fontSize: hp(2) }}
                   className="flex-1 font-semibold text-neutral-700"
                   placeholder="Email Address"
@@ -178,7 +208,7 @@ export default function SignUp() {
                     color="gray"
                   />
                   <TextInput
-                    onChangeText={(value) => (passRef.current = value)}
+                    onChangeText={(value) => (passRef.current = value || "")}
                     style={{ fontSize: hp(2) }}
                     className="flex-1 font-semibold text-neutral-700"
                     placeholder="Password"
@@ -218,9 +248,7 @@ export default function SignUp() {
                       style={{ fontSize: hp(2) }}
                       className="font-semibold text-neutral-700"
                     >
-                      {profileImage
-                        ? "Change Profile Picture"
-                        : "Pick Profile Image"}
+                      {image ? "Change Profile Picture" : "Pick Profile Image"}
                     </Text>
                   </TouchableOpacity>
                 </View>

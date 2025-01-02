@@ -12,51 +12,54 @@ import { usersRef } from "../../firebaseConfig";
 import { router } from "expo-router";
 
 export default function Profile() {
-  const { user } = useAuth();
-  const [friendsCount, setFriendsCount] = useState(0);
+  const { user } = useAuth(); // Using user data from AuthContext
+  const [userData, setUserData] = useState(user); // Store user data separately
 
-  
-  // Fetch number of friends from the user's data in Firestore
-  const getFriendsCount = async () => {
-    if (user?.uid) {
-      try {
-        const currentUserDoc = await getDoc(doc(usersRef, user?.uid));
-        const friends = currentUserDoc.data()?.friends || [];
-        setFriendsCount(friends.length);
-      } catch (error) {
-        console.error("Error fetching friends count: ", error);
-      }
-    }
-  };
-
+  // Fetch updated user data when the user context changes
   useEffect(() => {
-    getFriendsCount();
-  }, [user]);
+    if (user?.userId) {
+      // Fetch the latest user data from Firebase when the user context changes
+      const fetchUserData = async () => {
+        try {
+          const userDoc = await getDoc(doc(usersRef, user?.userId));
+          if (userDoc.exists()) {
+            const data = userDoc.data();
+            setUserData(data); // Update the userData state with the fetched data
+          }
+        } catch (error) {
+          console.error("Error fetching user data: ", error);
+        }
+      };
+
+      fetchUserData();
+    }
+  }, [user]); // Trigger the effect whenever the user context changes
 
   return (
     <View style={styles.container}>
       <View style={styles.profileCard}>
         {/* Profile Image */}
         <View style={styles.profileImageContainer}>
-          <Image source={user?.profileURL} style={styles.profileImage} />
+          <Image source={{ uri: userData?.profileURL }} style={styles.profileImage} />
         </View>
 
         {/* Profile Name */}
-        <Text style={styles.profileName}>{user?.profileName || "No Name"}</Text>
+        <Text style={styles.profileName}>{userData?.profileName || "No Name"}</Text>
 
         {/* User Email */}
-        <Text style={styles.email}>{user?.email || "No Email"}</Text>
+        <Text style={styles.email}>{userData?.email || "No Email"}</Text>
 
         {/* Friends Count */}
         <View style={styles.friendsContainer}>
-          <Text style={styles.friendsText}>Friends: {friendsCount}</Text>
+          <Text style={styles.friendsText}>
+            Friends: {userData?.friends?.length > 0 ? userData.friends.length : 0}
+          </Text>
         </View>
 
         {/* Back Button */}
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Text style={styles.backText}>Back to Home</Text>
         </TouchableOpacity>
-        
       </View>
     </View>
   );

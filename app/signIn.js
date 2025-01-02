@@ -23,16 +23,21 @@ import { PlayfairDisplay_500Medium } from "@expo-google-fonts/dev";
 import { useFonts } from "expo-font";
 import { getAuth, sendPasswordResetEmail } from "firebase/auth";
 import ForgotPassword from "../components/ForgotPassword";
+import PhoneSignIn from "../components/PhoneSignIn.js";
+
+
 
 export default function SignIn() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+
   const { login } = useAuth();
 
   const emailRef = useRef();
   const passRef = useRef();
 
   const [modalVisible, setModalVisible] = useState(false);
+  const [phonemodalVisible, setPhoneModalVisible] = useState(false);
   const [showPass, setShowPass] = useState(false);
 
   const [fontLoaded] = useFonts({
@@ -226,7 +231,7 @@ export default function SignIn() {
               <Pressable
                 className="mt-2 p-4 rounded-2xl px-6 flex-row items-center"
                 style={styles.googleButton}
-                onPress={() => Alert.alert("SignIn", "Coming Soon!!!")}
+                onPress={() =>setPhoneModalVisible(true)}
               >
                 <AntDesign name="phone" size={22} color={"green"} />
                 <Text
@@ -236,6 +241,12 @@ export default function SignIn() {
                   Sign-In with Phone
                 </Text>
               </Pressable>
+              <View>
+                <PhoneSignIn
+                  setModalVisible={setPhoneModalVisible}
+                  modalVisible={phonemodalVisible}
+                />
+              </View>
             </View>
           </View>
         </View>

@@ -7,7 +7,6 @@ import {
 import { createContext, useContext, useState, useEffect } from "react";
 import { auth, db } from "../firebaseConfig";
 import { doc, getDoc, setDoc } from "firebase/firestore";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 // Google Sign-In Config
 // GoogleSignin.configure({
@@ -39,15 +38,15 @@ export const AuthContextProvide = ({ children }) => {
     const docRef = doc(db, "users", userId);
     const docSnap = await getDoc(docRef);
 
-    console.log(docSnap)
     if (docSnap.exists()) {
       let data = docSnap.data();
       setUser({
         ...user,
         profileName: data.profileName,
         profileURL: data.profileURL,
+        email : data.email,
         userId: data.userId,
-        friends : data.friends
+        friends: data.friends,
       });
     }
   };
@@ -73,40 +72,15 @@ export const AuthContextProvide = ({ children }) => {
     }
   };
 
-  // Function to upload the profile image to Firebase Storage
-  const uploadProfileImage = async (uri, userId) => {
-    const storage = getStorage();
-    const response = await fetch(uri); // Fetch image from URI
-    const blob = await response.blob(); // Convert the image to a blob
-
-    const imageRef = ref(storage, `profileImages/${userId}`);
-    await uploadBytes(imageRef, blob); // Upload the image to Firebase Storage
-    const imageURL = await getDownloadURL(imageRef); // Get the download URL of the image
-    console.log("Done UploadProfileImage")
-    return imageURL;
-  };
-
   const register = async (email, password, profileName, profileURL) => {
     try {
       const resp = await createUserWithEmailAndPassword(auth, email, password);
 
-      console.log("Profile URL : ",profileURL)
-      // Upload the profile image to Firebase Storage
-      let uploadedImageURL = null;
-      if (profileURL) {
-        uploadedImageURL = await uploadProfileImage(
-          profileURL,
-          resp?.user?.uid
-        );
-      }
-      console.log("Uplaoded URL : ",profileURL)
-
-
       // Save user data along with the image URL to Firestore
       await setDoc(doc(db, "users", resp?.user?.uid), {
         profileName,
-        profileURL: uploadedImageURL || profileURL, // Save the uploaded image URL or the original URL
-        email : email,
+        profileURL: profileURL, // Save the uploaded image URL or the original URL
+        email: email,
         userId: resp?.user?.uid,
       })
         .then(() => {
