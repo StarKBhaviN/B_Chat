@@ -16,6 +16,7 @@ import {
   query,
 } from "firebase/firestore";
 import { db } from "../firebaseConfig";
+import { Badge } from "react-native-elements";
 
 export default function ChatItem({ item, router, noBorder, currentUser }) {
   const [lastMessage, setLastMessage] = useState(undefined);
@@ -61,6 +62,7 @@ export default function ChatItem({ item, router, noBorder, currentUser }) {
       return "Say Hii👋";
     }
   };
+
   return (
     <TouchableOpacity
       onPress={openChatRoom}
@@ -68,13 +70,16 @@ export default function ChatItem({ item, router, noBorder, currentUser }) {
         noBorder ? "" : "border-b b-neutral-600"
       }`}
     >
-      <Image
-        source={item?.profileURL}
-        style={{ height: hp(5.5), width: hp(5.5), borderRadius: 100 }}
-        className="rounded-full"
-        placeholder={blurhash}
-        transition={500}
-      />
+      <View style={{alignItems : "flex-start"}}>
+        <Badge status={item.status === "online" ? "success" : "warning"} containerStyle={{position : "absolute", top : -2}}/>
+        <Image
+          source={item?.profileURL}
+          style={{ height: hp(5.5), width: hp(5.5), borderRadius: 100 }}
+          className="rounded-full"
+          placeholder={blurhash}
+          transition={500}
+        />
+      </View>
 
       {/* Name and Last Message */}
       <View className="flex-1 gap-1">

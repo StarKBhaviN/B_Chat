@@ -12,12 +12,21 @@ import {
   heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
 import ChatList from "../../components/ChatList";
-import { doc, getDoc, getDocs, query, where } from "firebase/firestore";
-import { usersRef } from "../../firebaseConfig";
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  orderBy,
+  query,
+  where,
+} from "firebase/firestore";
+import { roomsRef, usersRef } from "../../firebaseConfig";
 import { useFocusEffect } from "@react-navigation/native";
 import { StyleSheet } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import AddUser from "../../components/AddUser";
+import { getRoomID } from "../../utils/common";
 
 export default function Home() {
   const { user } = useAuth();
@@ -49,8 +58,31 @@ export default function Home() {
           data.push({ ...doc.data() });
         });
 
-        
-        setUsers(data);
+        const usersWithLastMessage = await Promise.all(
+          friendIds.map(async (friendID) => {
+            let roomId = getRoomID(currentUserDoc?.data()?.userId, friendID);
+            const messagesRef = collection(doc(roomsRef, roomId), "messages");
+            const q = query(messagesRef, orderBy("createdAt", "desc"));
+            const messagesSnapShot = await getDocs(q);
+
+            let lastMessage = messagesSnapShot.docs[0]?.data(); // Get the latest message
+
+            // Find the friend from the userSnapShot
+            const friendData = data.find(
+              (friend) => friend.userId === friendID
+            );
+
+            return { ...friendData, lastMessage };
+          })
+        );
+
+        usersWithLastMessage.sort((a, b) => {
+          const aTime = a.lastMessage?.createdAt?.seconds || 0;
+          const bTime = b.lastMessage?.createdAt?.seconds || 0;
+          return bTime - aTime; // Latest message first
+        });
+
+        setUsers(usersWithLastMessage);
       } else {
         setUsers([]);
       }
@@ -70,6 +102,9 @@ export default function Home() {
     }, [user])
   );
 
+  useEffect(()=>{
+    getUsers()
+  },[user])
   return (
     <View className="flex-1 bg-white">
       <StatusBar style="light" />

@@ -16,6 +16,7 @@ export default function ForgotPassword({ setModalVisible, modalVisible }) {
   const [email, setEmail] = useState("");
 
   const handlePasswordReset = async () => {
+    console.log(email)
     if (email === "") {
       Alert.alert("Forgot Password", "Enter your email");
       return;

@@ -6,7 +6,7 @@ import {
 } from "firebase/auth";
 import { createContext, useContext, useState, useEffect } from "react";
 import { auth, db } from "../firebaseConfig";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 
 // Google Sign-In Config
 // GoogleSignin.configure({
@@ -19,6 +19,13 @@ export const AuthContextProvide = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(undefined);
 
+  // Function to update user's online status
+  const updateUserStatus = async (userId, status) => {
+    const docRef = doc(db, "users", userId);
+    await updateDoc(docRef, { status });  // Update user status
+  };
+
+
   useEffect(() => {
     // on Auth State changed
     const unSub = onAuthStateChanged(auth, (user) => {
@@ -26,9 +33,12 @@ export const AuthContextProvide = ({ children }) => {
         setIsAuthenticated(true);
         setUser(user);
         updateUserData(user.uid);
+        updateUserStatus(user.uid, "online");
       } else {
         setIsAuthenticated(false);
         setUser(null);
+        // If no user is logged in, set the status to 'offline'
+        updateUserStatus(user?.uid, "offline");
       }
     });
     return unSub;
@@ -47,6 +57,7 @@ export const AuthContextProvide = ({ children }) => {
         email : data.email,
         userId: data.userId,
         friends: data.friends,
+        status: data.status, 
       });
     }
   };
@@ -65,6 +76,8 @@ export const AuthContextProvide = ({ children }) => {
   };
   const logout = async () => {
     try {
+      // Set status to 'offline' when the user logs out
+      await updateUserStatus(user?.userId, "offline");
       await signOut(auth);
       return { success: true };
     } catch (error) {
@@ -82,6 +95,7 @@ export const AuthContextProvide = ({ children }) => {
         profileURL: profileURL, // Save the uploaded image URL or the original URL
         email: email,
         userId: resp?.user?.uid,
+        status: "offline",
       })
         .then(() => {
           console.log("User document created successfully.");
