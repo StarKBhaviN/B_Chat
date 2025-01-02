@@ -11,6 +11,7 @@ import blurhash, { formatMessageTime, getRoomID } from "../utils/common";
 import {
   collection,
   doc,
+  limit,
   onSnapshot,
   orderBy,
   query,
@@ -22,18 +23,19 @@ export default function ChatItem({ item, router, noBorder, currentUser }) {
   const [lastMessage, setLastMessage] = useState(undefined);
 
   useEffect(() => {
-    // Fetches messages
     let roomId = getRoomID(currentUser?.userId, item?.userId);
-    const docRef = doc(db, "rooms", roomId);
-    const messagesRef = collection(docRef, "messages");
-    const q = query(messagesRef, orderBy("createdAt", "desc"));
-
-    let unsub = onSnapshot(q, (snapshot) => {
-      let allMessages = snapshot.docs.map((doc) => {
-        return doc.data(0);
-      });
-      setLastMessage(allMessages[0] ? allMessages[0] : null);
+    const messagesRef = collection(doc(db, "rooms", roomId), "messages");
+    const q = query(messagesRef, orderBy("createdAt", "desc"), limit(1));
+  
+    const unsub = onSnapshot(q, (snapshot) => {
+      if (!snapshot.empty) {
+        const lastMsg = snapshot.docs[0].data();
+        setLastMessage(lastMsg);
+      } else {
+        setLastMessage(null);
+      }
     });
+  
     return unsub;
   }, []);
 

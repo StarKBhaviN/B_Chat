@@ -13,7 +13,7 @@ export default function ChatList({ users, currentUser }) {
       <FlatList
         data={users}
         contentContainerStyle={{ flex: 1, paddingVertical: 25 }}
-        keyExtractor={(item) => Math.random()}
+        keyExtractor={(item) => item.userId}
         showsVerticalScrollIndicator={false}
         renderItem={({ item, index }) => (
           <ChatItem
