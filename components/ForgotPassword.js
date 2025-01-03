@@ -30,8 +30,10 @@ export default function ForgotPassword({ setModalVisible, modalVisible }) {
     try {
       // Fetch the sign-in methods for the given email
       const signInMethods = await fetchSignInMethodsForEmail(auth, trimmedEmail);
+      // const isEmail = await auth.getUserByEmail(trimmedEmail)
 
       console.log(signInMethods);
+      // console.log(isEmail);
 
       if (signInMethods.length > 0) {
         // Send the password reset email if the user exists

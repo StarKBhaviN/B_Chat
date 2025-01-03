@@ -15,7 +15,11 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "permissions": [
+        "android.permission.RECORD_AUDIO"
+      ],
+      "package": "com.starkbhavin.B_Chat"
     },
     "web": {
       "bundler": "metro",
@@ -37,12 +41,18 @@
       [
         "expo-image-picker",
         {
-          "photosPermission" : "The app accesses your photos to let you share them with your permission"
+          "photosPermission": "The app accesses your photos to let you share them with your permission"
         }
       ]
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+    },
+    "owner": "starkbhavin"
   }
 }
