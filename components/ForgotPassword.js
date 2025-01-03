@@ -9,37 +9,44 @@ import {
   Alert,
 } from "react-native";
 import React, { useState } from "react";
-import { sendPasswordResetEmail, fetchSignInMethodsForEmail } from "firebase/auth";
+import {
+  sendPasswordResetEmail,
+  fetchSignInMethodsForEmail,
+} from "firebase/auth";
 import { auth } from "../firebaseConfig";
 
 export default function ForgotPassword({ setModalVisible, modalVisible }) {
   const [email, setEmail] = useState("");
 
   const handlePasswordReset = async () => {
-    console.log(email)
-    if (email === "") {
+    const trimmedEmail = email.trim();
+    console.log(trimmedEmail);
+
+    if (trimmedEmail === "") {
       Alert.alert("Forgot Password", "Enter your email");
       return;
     }
+
     try {
-      const signInMethods = await fetchSignInMethodsForEmail(auth, email);
+      // Fetch the sign-in methods for the given email
+      const signInMethods = await fetchSignInMethodsForEmail(auth, trimmedEmail);
+
+      console.log(signInMethods);
 
       if (signInMethods.length > 0) {
-        await sendPasswordResetEmail(auth, email)
-        .then(() => {
-          Alert.alert("Success", "Password reset email sent!");
-          setModalVisible(false);
-        })
-        .catch((e) => {
-          console.error("Error: ", e);
-          Alert.alert("Error", e.message);
-        });
+        // Send the password reset email if the user exists
+        await sendPasswordResetEmail(auth, trimmedEmail);
+        Alert.alert("Success", "Password reset email sent!");
+        setModalVisible(false);
       } else {
-        Alert.alert("Error", "We are unable to find user with this Email for B_Chat App")
-        setEmail("")
+        Alert.alert(
+          "Error",
+          "We are unable to find a user with this email for B_Chat App"
+        );
+        setEmail(""); // Clear the email input field
       }
-      
     } catch (error) {
+      console.error("Error resetting password:", error);
       Alert.alert("Error", error.message);
     }
   };
@@ -71,7 +78,12 @@ export default function ForgotPassword({ setModalVisible, modalVisible }) {
                 Reset Password
               </Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => {setModalVisible(false); setEmail("")}}>
+            <TouchableOpacity
+              onPress={() => {
+                setModalVisible(false);
+                setEmail("");
+              }}
+            >
               <Text style={styles.cancel}>Cancel</Text>
             </TouchableOpacity>
           </View>

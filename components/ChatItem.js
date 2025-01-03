@@ -135,7 +135,7 @@ export default function ChatItem({ item, router, noBorder, currentUser }) {
         </View>
         <View className="flex flex-row justify-between">
           <Text
-            style={{ fontSize: hp(1.6), width: wp(70) }}
+            style={{ fontSize: hp(1.6), width: wp(70), maxHeight : hp(2.5) }}
             className="font-medium text-neutral-500"
           >
             {renderLastMessage()}

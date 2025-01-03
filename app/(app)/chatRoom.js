@@ -69,22 +69,26 @@ export default function ChatRoom() {
     const messagesRef = collection(docRef, "messages");
     const q = query(messagesRef, orderBy("createdAt", "asc"));
 
-    let unsub = onSnapshot(q, (snapshot) => {
-      let allMessages = snapshot.docs.map((doc) => {
-        let data = doc.data();
-        return {
-          ...data,
-          createdAt: data.createdAt || Timestamp.now(),
-        };
-      });
+    let unsub = onSnapshot(
+      q,
+      (snapshot) => {
+        let allMessages = snapshot.docs.map((doc) => {
+          let data = doc.data();
+          return {
+            ...data,
+            createdAt: data.createdAt || Timestamp.now(),
+          };
+        });
 
-      allMessages.sort(
-        (a, b) => a.createdAt?.toMillis() - b.createdAt?.toMillis()
-      );
-      setMessages([...allMessages]);
-    }, (error) => {
-      console.log("Error chatRoom fetchMessages : ",error)
-    });
+        allMessages.sort(
+          (a, b) => a.createdAt?.toMillis() - b.createdAt?.toMillis()
+        );
+        setMessages([...allMessages]);
+      },
+      (error) => {
+        console.log("Error chatRoom fetchMessages : ", error);
+      }
+    );
 
     return () => unsub();
   };
@@ -94,41 +98,40 @@ export default function ChatRoom() {
     let roomId = getRoomID(user?.userId, item?.userId);
     const docRef = doc(db, "rooms", roomId);
     const messagesRef = collection(docRef, "messages");
-  
+
     console.log("Marking messages as read for friend: ", item?.userId);
-  
+
     try {
       // Get all unread messages
       const unreadQuery = query(
         messagesRef,
-        where("userId", "==", item?.userId),  // Target messages sent by the friend
+        where("userId", "==", item?.userId), // Target messages sent by the friend
         where("isReaded", "==", false)
       );
-  
+
       const unreadSnapshot = await getDocs(unreadQuery);
-  
+
       if (unreadSnapshot.empty) {
         console.log("No unread messages found!");
         return;
       }
-  
+
       console.log(`Found ${unreadSnapshot.size} unread messages`);
-  
+
       // Use batch write to improve performance
       const batch = writeBatch(db);
-  
+
       unreadSnapshot.forEach((messageDoc) => {
         const messageRef = doc(messagesRef, messageDoc.id);
         batch.update(messageRef, { isReaded: true });
       });
-  
+
       await batch.commit();
       console.log("All messages marked as read.");
     } catch (error) {
       console.error("Error marking messages as read: ", error);
     }
   };
-  
 
   const updateScrollView = () => {
     setTimeout(() => {
@@ -187,20 +190,30 @@ export default function ChatRoom() {
             messages={messages}
             currentUser={user}
           />
-          <View style={{ marginBottom: hp(2.7) }} className="pt-2">
-            <View className="flex-row mx-3 justify-between bg-white border p-1 border-neutral-300 rounded-full pl-3">
+          <View style={{ marginBottom: hp(2.5) }} className="pt-2">
+            <View className="flex-row mx-3 justify-between items-center p-1 bg-white border border-neutral-300 rounded-full pl-3">
               <TextInput
                 ref={inputRef}
                 onChangeText={(value) => (textRef.current = value)}
                 placeholder="Type Message..."
-                style={{ fontSize: hp(1.8) }}
+                style={{
+                  fontSize: hp(1.9),
+                  // textOverflow: "wrap",
+                  // minHeight: hp(3), // Minimum height for the input field
+                  maxHeight: hp(6), // Maximum height to allow only 2-3 lines
+                  flex: 1, // Allow the input to expand
+                  textAlignVertical: "top",
+                  lineHeight: hp(3),
+                }}
+                multiline={true}
                 className="flex-1 mr-2"
                 returnKeyType="send"
                 onSubmitEditing={handleSendMessage} // Sends on "Enter"
               />
               <TouchableOpacity
                 onPress={handleSendMessage}
-                className="bg-neutral-200 p-2 mr-[1px] rounded-full"
+                className="bg-neutral-200 p-2 mr-[1px] rounded-full items-center justify-center"
+                style={{height : hp(5), width : hp(5)}}
               >
                 <MaterialCommunityIcons
                   name="send"
