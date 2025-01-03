@@ -6,7 +6,13 @@ import {
 } from "firebase/auth";
 import { createContext, useContext, useState, useEffect } from "react";
 import { auth, db } from "../firebaseConfig";
-import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
+import {
+  doc,
+  getDoc,
+  serverTimestamp,
+  setDoc,
+  updateDoc,
+} from "firebase/firestore";
 
 // Google Sign-In Config
 // GoogleSignin.configure({
@@ -22,9 +28,8 @@ export const AuthContextProvide = ({ children }) => {
   // Function to update user's online status
   const updateUserStatus = async (userId, status) => {
     const docRef = doc(db, "users", userId);
-    await updateDoc(docRef, { status });  // Update user status
+    await updateDoc(docRef, { status }); // Update user status
   };
-
 
   useEffect(() => {
     // on Auth State changed
@@ -38,7 +43,7 @@ export const AuthContextProvide = ({ children }) => {
         setIsAuthenticated(false);
         setUser(null);
         // If no user is logged in, set the status to 'offline'
-        updateUserStatus(user?.uid, "offline");
+        updateUserStatus(user?.uid, "disconnected");
       }
     });
     return unSub;
@@ -54,10 +59,11 @@ export const AuthContextProvide = ({ children }) => {
         ...user,
         profileName: data.profileName,
         profileURL: data.profileURL,
-        email : data.email,
+        email: data.email,
         userId: data.userId,
         friends: data.friends,
-        status: data.status, 
+        status: data.status,
+        lastSeen : data.lastSeen
       });
     }
   };
@@ -76,8 +82,10 @@ export const AuthContextProvide = ({ children }) => {
   };
   const logout = async () => {
     try {
-      // Set status to 'offline' when the user logs out
-      await updateUserStatus(user?.userId, "offline");
+      // Only update status if the user is logged in
+      if (user?.userId) {
+        await updateUserStatus(user.userId, "disconnected"); // Set status to 'disconnected' during logout
+      }
       await signOut(auth);
       return { success: true };
     } catch (error) {
@@ -95,7 +103,7 @@ export const AuthContextProvide = ({ children }) => {
         profileURL: profileURL, // Save the uploaded image URL or the original URL
         email: email,
         userId: resp?.user?.uid,
-        status: "offline",
+        status: "online",
       })
         .then(() => {
           console.log("User document created successfully.");

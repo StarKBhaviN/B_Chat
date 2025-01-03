@@ -5,7 +5,7 @@ import {
   ActivityIndicator,
   TouchableOpacity,
 } from "react-native";
-import React, { useCallback, useEffect, useState, useRef } from "react";
+import React, { useCallback, useEffect, useState, useRef, useMemo } from "react";
 import { useAuth } from "../../context/authContext";
 import {
   widthPercentageToDP as wp,
@@ -33,18 +33,18 @@ import { getRoomID } from "../../utils/common";
 export default function Home() {
   const { user } = useAuth();
   const [users, setUsers] = useState([]);
-  const [showModal, setShowModal] = useState(false)
+  const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(true);
-  const listeners = useRef(new Map()); // Store listeners
-  const messageListeners = useRef(new Map()); // For chat updates
+  const listeners = useRef(new Map());
+  const messageListeners = useRef(new Map());
 
-  // Initial friend list fetch
+  // Fetch initial friend list and last messages
   const fetchInitialUsers = async () => {
     if (!user?.userId) return;
-    
+
     const currentUserDoc = await getDoc(doc(usersRef, user?.userId));
     const friendIds = currentUserDoc.data()?.friends || [];
-    
+
     if (friendIds.length === 0) {
       setUsers([]);
       setLoading(false);
@@ -53,13 +53,12 @@ export default function Home() {
 
     const userQry = query(usersRef, where("userId", "in", friendIds));
     const snapshot = await getDocs(userQry);
-    
+
     let initialUsers = [];
     snapshot.forEach((doc) => {
       initialUsers.push({ ...doc.data() });
     });
 
-    // Fetch last messages and set listeners
     const usersWithLastMessage = await Promise.all(
       initialUsers.map(async (friend) => {
         let roomId = getRoomID(user?.userId, friend.userId);
@@ -68,25 +67,22 @@ export default function Home() {
 
         const lastMessageSnap = await getDocs(q);
         let lastMessage = lastMessageSnap.docs[0]?.data();
-        
-        // Listen for message updates in real-time
+
         if (!messageListeners.current.has(roomId)) {
           const unsub = onSnapshot(q, (snap) => {
             const newMessage = snap.docs[0]?.data();
 
             setUsers((prevUsers) => {
               const updatedUsers = prevUsers.map((u) =>
-                u.userId === friend.userId
-                  ? { ...u, lastMessage: newMessage }
-                  : u
+                u.userId === friend.userId ? { ...u, lastMessage: newMessage } : u
               );
 
-              // Re-sort by latest message dynamically
               updatedUsers.sort((a, b) => {
                 const aTime = a.lastMessage?.createdAt?.seconds || 0;
                 const bTime = b.lastMessage?.createdAt?.seconds || 0;
                 return bTime - aTime;
               });
+
               return [...updatedUsers];
             });
           });
@@ -97,21 +93,34 @@ export default function Home() {
       })
     );
 
+    usersWithLastMessage.sort((a, b) => {
+      const aTime = a.lastMessage?.createdAt?.seconds || 0;
+      const bTime = b.lastMessage?.createdAt?.seconds || 0;
+      return bTime - aTime;
+    });
+
     setUsers(usersWithLastMessage);
     setLoading(false);
   };
 
-  // Real-time status listener
   const listenToFriendStatus = (friendIds) => {
     friendIds.forEach((friendId) => {
       if (!listeners.current.has(friendId)) {
         const unsub = onSnapshot(doc(usersRef, friendId), (docSnap) => {
           const updatedUser = docSnap.data();
-          setUsers((prevUsers) =>
-            prevUsers.map((u) =>
+          setUsers((prevUsers) => {
+            const updatedUsers = prevUsers.map((u) =>
               u.userId === friendId ? { ...u, ...updatedUser } : u
-            )
-          );
+            );
+
+            updatedUsers.sort((a, b) => {
+              const aTime = a.lastMessage?.createdAt?.seconds || 0;
+              const bTime = b.lastMessage?.createdAt?.seconds || 0;
+              return bTime - aTime;
+            });
+
+            return [...updatedUsers];
+          });
         });
         listeners.current.set(friendId, unsub);
       }
@@ -141,6 +150,14 @@ export default function Home() {
     }, [user])
   );
 
+  const sortedUsers = useMemo(() => {
+    return [...users].sort((a, b) => {
+      const aTime = a.lastMessage?.createdAt?.seconds || 0;
+      const bTime = b.lastMessage?.createdAt?.seconds || 0;
+      return bTime - aTime;
+    });
+  }, [users]);
+
   return (
     <View className="flex-1 bg-white">
       <StatusBar style="light" />
@@ -148,8 +165,8 @@ export default function Home() {
         <View className="flex items-center" style={{ top: hp(30) }}>
           <ActivityIndicator size="large" />
         </View>
-      ) : users.length > 0 ? (
-        <ChatList currentUser={user} users={users} />
+      ) : sortedUsers.length > 0 ? (
+        <ChatList currentUser={user} users={sortedUsers} />
       ) : (
         <Text className="text-center mt-10">No users available</Text>
       )}
@@ -182,9 +199,5 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     elevation: 5,
-    shadowColor: "green",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 3,
   },
 });

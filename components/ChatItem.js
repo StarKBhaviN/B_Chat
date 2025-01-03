@@ -11,35 +11,56 @@ import blurhash, { formatMessageTime, getRoomID } from "../utils/common";
 import {
   collection,
   doc,
+  getDocs,
   limit,
   onSnapshot,
   orderBy,
   query,
+  where,
 } from "firebase/firestore";
 import { db } from "../firebaseConfig";
 import { Badge } from "react-native-elements";
 
 export default function ChatItem({ item, router, noBorder, currentUser }) {
   const [lastMessage, setLastMessage] = useState(undefined);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
     let roomId = getRoomID(currentUser?.userId, item?.userId);
     const messagesRef = collection(doc(db, "rooms", roomId), "messages");
     const q = query(messagesRef, orderBy("createdAt", "desc"), limit(1));
-  
+
     const unsub = onSnapshot(q, (snapshot) => {
       if (!snapshot.empty) {
         const lastMsg = snapshot.docs[0].data();
+        getUnreadMessage(roomId);
         setLastMessage(lastMsg);
       } else {
         setLastMessage(null);
       }
     });
-  
+
     return unsub;
   }, []);
 
-  // console.log(lastMessage)
+  const getUnreadMessage = async (roomId) => {
+    const docRef = doc(db, "rooms", roomId);
+    const messagesRef = collection(docRef, "messages");
+
+    try {
+      const unreadQuery = query(
+        messagesRef,
+        where("userId", "==", item?.userId),
+        where("isReaded", "==", false)
+      );
+
+      const unreadSnapShot = await getDocs(unreadQuery);
+      setUnreadCount(unreadSnapShot.size);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   const openChatRoom = () => {
     router.push({ pathname: "/chatRoom", params: item });
   };
@@ -49,7 +70,7 @@ export default function ChatItem({ item, router, noBorder, currentUser }) {
       return formatMessageTime(lastMessage?.createdAt);
     }
     return "";
-};
+  };
 
   const renderLastMessage = () => {
     if (typeof lastMessage == "undefined") {
@@ -72,8 +93,17 @@ export default function ChatItem({ item, router, noBorder, currentUser }) {
         noBorder ? "" : "border-b b-neutral-600"
       }`}
     >
-      <View style={{alignItems : "flex-start"}}>
-        <Badge status={item.status === "online" ? "success" : "warning"} containerStyle={{position : "absolute", top : -2}}/>
+      <View style={{ alignItems: "flex-start" }}>
+        <Badge
+          status={
+            item.status === "online"
+              ? "success"
+              : item.status === "disconnected"
+              ? "error"
+              : "warning"
+          }
+          containerStyle={{ position: "absolute", top: -2 }}
+        />
         <Image
           source={item?.profileURL}
           style={{ height: hp(5.5), width: hp(5.5), borderRadius: 100 }}
@@ -99,12 +129,20 @@ export default function ChatItem({ item, router, noBorder, currentUser }) {
             {renderTime()}
           </Text>
         </View>
-        <Text
-          style={{ fontSize: hp(1.6) }}
-          className="font-medium text-neutral-500"
-        >
-          {renderLastMessage()}
-        </Text>
+        <View className="flex flex-row justify-between">
+          <Text
+            style={{ fontSize: hp(1.6), width : wp(70) }}
+            className="font-medium text-neutral-500"
+          >
+            {renderLastMessage()}
+          </Text>
+          {unreadCount > 0 && (
+            <Badge
+              value={<Text style={{fontSize : 12}}>{unreadCount}</Text>}
+              status="success"
+            />
+          )}
+        </View>
       </View>
     </TouchableOpacity>
   );

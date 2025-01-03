@@ -22,12 +22,16 @@ import {
   addDoc,
   collection,
   doc,
+  getDocs,
   onSnapshot,
   orderBy,
   query,
   serverTimestamp,
   setDoc,
   Timestamp,
+  updateDoc,
+  where,
+  writeBatch,
 } from "firebase/firestore";
 import { db } from "../../firebaseConfig";
 
@@ -41,8 +45,25 @@ export default function ChatRoom() {
   const scrollViewRef = useRef(null);
 
   useEffect(() => {
-    createRommIfNotExist();
+    createRoomIfNotExist();
+    fetchMessages();
+    markMessagesAsRead(); // Mark messages as read when entering the room
 
+    const KeyboardDidShowListener = Keyboard.addListener(
+      "keyboardDidShow",
+      updateScrollView
+    );
+
+    return () => {
+      KeyboardDidShowListener.remove();
+    };
+  }, []);
+
+  useEffect(() => {
+    updateScrollView();
+  }, [messages]);
+
+  const fetchMessages = () => {
     let roomId = getRoomID(user?.userId, item?.userId);
     const docRef = doc(db, "rooms", roomId);
     const messagesRef = collection(docRef, "messages");
@@ -56,27 +77,56 @@ export default function ChatRoom() {
           createdAt: data.createdAt || Timestamp.now(),
         };
       });
-      // Sort messages by createdAt (fallback in case of delay)
+
       allMessages.sort(
         (a, b) => a.createdAt?.toMillis() - b.createdAt?.toMillis()
       );
       setMessages([...allMessages]);
     });
 
-    const KeyboardDidShowListener = Keyboard.addListener(
-      "keyboardDidShow",
-      updateScrollView
-    );
+    return unsub;
+  };
 
-    return () => {
-      unsub();
-      KeyboardDidShowListener.remove();
-    };
-  }, []);
-
-  useEffect(() => {
-    updateScrollView();
-  }, [messages]);
+  const markMessagesAsRead = async () => {
+    // Get room id for checking that messages
+    let roomId = getRoomID(user?.userId, item?.userId);
+    const docRef = doc(db, "rooms", roomId);
+    const messagesRef = collection(docRef, "messages");
+  
+    console.log("Marking messages as read for friend: ", item?.userId);
+  
+    try {
+      // Get all unread messages
+      const unreadQuery = query(
+        messagesRef,
+        where("userId", "==", item?.userId),  // Target messages sent by the friend
+        where("isReaded", "==", false)
+      );
+  
+      const unreadSnapshot = await getDocs(unreadQuery);
+  
+      if (unreadSnapshot.empty) {
+        console.log("No unread messages found!");
+        return;
+      }
+  
+      console.log(`Found ${unreadSnapshot.size} unread messages`);
+  
+      // Use batch write to improve performance
+      const batch = writeBatch(db);
+  
+      unreadSnapshot.forEach((messageDoc) => {
+        const messageRef = doc(messagesRef, messageDoc.id);
+        batch.update(messageRef, { isReaded: true });
+      });
+  
+      await batch.commit();
+      console.log("All messages marked as read.");
+    } catch (error) {
+      console.error("Error marking messages as read: ", error);
+    }
+  };
+  
 
   const updateScrollView = () => {
     setTimeout(() => {
@@ -84,14 +134,13 @@ export default function ChatRoom() {
     }, 100);
   };
 
-  const createRommIfNotExist = async () => {
+  const createRoomIfNotExist = async () => {
     let roomId = getRoomID(user?.userId, item?.userId);
     try {
       await setDoc(doc(db, "rooms", roomId), {
         roomId,
         createdAt: Timestamp.fromDate(new Date()),
       });
-      console.log("Room created successfully!");
     } catch (error) {
       console.error("Error creating room:", error);
     }
@@ -99,37 +148,31 @@ export default function ChatRoom() {
 
   const handleSendMessage = async () => {
     let message = textRef.current.trim();
-    if (!message) {
-      console.log("No message");
-      return;
-    }
+    if (!message) return;
+
     try {
       let roomId = getRoomID(user?.userId, item?.userId);
       const docRef = doc(db, "rooms", roomId);
       const messagesRef = collection(docRef, "messages");
 
-      // Clear the input field immediately
       textRef.current = "";
       if (inputRef.current) {
         inputRef.current.clear();
-        inputRef.current.focus(); // Maintain focus to keep keyboard open
+        inputRef.current.focus();
       }
 
-      // Use Firestore Server Timestamp for consistency
       await addDoc(messagesRef, {
         userId: user?.userId,
         text: message,
         profileURL: user?.profileURL,
         senderName: user?.profileName,
         createdAt: serverTimestamp(),
+        isReaded: false,
       });
-
-      console.log("Message sent successfully");
     } catch (error) {
       console.error("Error sending message:", error);
     }
   };
-
   return (
     <CustomKeyboardView inChat={true}>
       <View className="flex-1 bg-white">
