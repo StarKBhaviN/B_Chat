@@ -82,9 +82,11 @@ export default function ChatRoom() {
         (a, b) => a.createdAt?.toMillis() - b.createdAt?.toMillis()
       );
       setMessages([...allMessages]);
+    }, (error) => {
+      console.log("Error chatRoom fetchMessages : ",error)
     });
 
-    return unsub;
+    return () => unsub();
   };
 
   const markMessagesAsRead = async () => {

@@ -5,7 +5,7 @@ import {
   signOut,
 } from "firebase/auth";
 import { createContext, useContext, useState, useEffect } from "react";
-import { auth, db } from "../firebaseConfig";
+import { auth, db, usersRef } from "../firebaseConfig";
 import {
   doc,
   getDoc,
@@ -42,11 +42,9 @@ export const AuthContextProvide = ({ children }) => {
       } else {
         setIsAuthenticated(false);
         setUser(null);
-        // If no user is logged in, set the status to 'offline'
-        updateUserStatus(user?.uid, "disconnected");
       }
     });
-    return unSub;
+    return () => unSub();
   }, []);
 
   const updateUserData = async (userId) => {
@@ -63,7 +61,7 @@ export const AuthContextProvide = ({ children }) => {
         userId: data.userId,
         friends: data.friends,
         status: data.status,
-        lastSeen : data.lastSeen
+        lastSeen: data.lastSeen,
       });
     }
   };
@@ -80,15 +78,22 @@ export const AuthContextProvide = ({ children }) => {
       return { success: false, msg };
     }
   };
+
   const logout = async () => {
     try {
-      // Only update status if the user is logged in
+      // Update user status before logout
       if (user?.userId) {
-        await updateUserStatus(user.userId, "disconnected"); // Set status to 'disconnected' during logout
+        await updateDoc(doc(usersRef, user.userId), {
+          status: "disconnected",
+          lastSeen: serverTimestamp(),
+        });
       }
+
+      // Proceed with sign-out
       await signOut(auth);
       return { success: true };
     } catch (error) {
+      console.error("Logout error: ", error);
       return { success: false, msg: error.message, error: error };
     }
   };

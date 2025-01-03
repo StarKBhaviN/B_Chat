@@ -18,36 +18,37 @@ const MainLayout = () => {
 
   useEffect(() => {
     const handleAppStateChange = async (nextAppState) => {
-      if (appState.current === "active" && nextAppState === "background") {
-        // App goes to background (not closed, just backgrounded)
-        if (user?.userId) {
-          await updateDoc(doc(usersRef, user.userId), {
-            status: "offline",
-            lastSeen: serverTimestamp(),
-          });
+      if (user?.userId) {
+        try {
+          const userRef = doc(usersRef, user.userId);
+  
+          if (appState.current === "active" && nextAppState === "background") {
+            // Update Firestore on background
+            await updateDoc(userRef, {
+              status: "offline",
+              lastSeen: serverTimestamp(),
+            });
+          } else if (nextAppState === "active") {
+            // Update Firestore on foreground
+            await updateDoc(userRef, {
+              status: "online",
+              lastSeen: "online",
+            });
+          }
+        } catch (error) {
+          console.error("AppState update error: ", error);
         }
-      } else if (nextAppState === "active") {
-        // App comes to foreground
-        if (user?.userId) {
-          await updateDoc(doc(usersRef, user.userId), {
-            status: "online",
-            lastSeen : "online"
-          });
-        }
-      } // Also consider the "inactive" state, though it's rarely used
-      else if (nextAppState === "inactive") {
-        console.log("App is inactive");
       }
       appState.current = nextAppState;
     };
-    const subscription = AppState.addEventListener(
-      "change",
-      handleAppStateChange
-    );
+  
+    const subscription = AppState.addEventListener("change", handleAppStateChange);
+  
     return () => {
       subscription.remove();
     };
   }, [user]);
+  
 
   useEffect(() => {
     // Check if user is Authenticated or not

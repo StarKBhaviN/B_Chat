@@ -31,6 +31,7 @@ export default function ChatItem({ item, router, noBorder, currentUser }) {
     const q = query(messagesRef, orderBy("createdAt", "desc"), limit(1));
 
     const unsub = onSnapshot(q, (snapshot) => {
+      if (!currentUser) return;
       if (!snapshot.empty) {
         const lastMsg = snapshot.docs[0].data();
         getUnreadMessage(roomId);
@@ -40,10 +41,11 @@ export default function ChatItem({ item, router, noBorder, currentUser }) {
       }
     });
 
-    return unsub;
+    return () => unsub();
   }, []);
 
   const getUnreadMessage = async (roomId) => {
+    if (!currentUser) return;
     const docRef = doc(db, "rooms", roomId);
     const messagesRef = collection(docRef, "messages");
 
@@ -66,6 +68,7 @@ export default function ChatItem({ item, router, noBorder, currentUser }) {
   };
 
   const renderTime = () => {
+    if (!currentUser) return;
     if (lastMessage) {
       return formatMessageTime(lastMessage?.createdAt);
     }
@@ -73,6 +76,7 @@ export default function ChatItem({ item, router, noBorder, currentUser }) {
   };
 
   const renderLastMessage = () => {
+    if (!currentUser) return;
     if (typeof lastMessage == "undefined") {
       return "Loading...";
     } else if (lastMessage) {
@@ -131,14 +135,14 @@ export default function ChatItem({ item, router, noBorder, currentUser }) {
         </View>
         <View className="flex flex-row justify-between">
           <Text
-            style={{ fontSize: hp(1.6), width : wp(70) }}
+            style={{ fontSize: hp(1.6), width: wp(70) }}
             className="font-medium text-neutral-500"
           >
             {renderLastMessage()}
           </Text>
           {unreadCount > 0 && (
             <Badge
-              value={<Text style={{fontSize : 12}}>{unreadCount}</Text>}
+              value={<Text style={{ fontSize: 12 }}>{unreadCount}</Text>}
               status="success"
             />
           )}

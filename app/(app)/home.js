@@ -5,7 +5,13 @@ import {
   ActivityIndicator,
   TouchableOpacity,
 } from "react-native";
-import React, { useCallback, useEffect, useState, useRef, useMemo } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useState,
+  useRef,
+  useMemo,
+} from "react";
 import { useAuth } from "../../context/authContext";
 import {
   widthPercentageToDP as wp,
@@ -69,23 +75,31 @@ export default function Home() {
         let lastMessage = lastMessageSnap.docs[0]?.data();
 
         if (!messageListeners.current.has(roomId)) {
-          const unsub = onSnapshot(q, (snap) => {
-            const newMessage = snap.docs[0]?.data();
+          const unsub = onSnapshot(
+            q,
+            (snap) => {
+              const newMessage = snap.docs[0]?.data();
 
-            setUsers((prevUsers) => {
-              const updatedUsers = prevUsers.map((u) =>
-                u.userId === friend.userId ? { ...u, lastMessage: newMessage } : u
-              );
+              setUsers((prevUsers) => {
+                const updatedUsers = prevUsers.map((u) =>
+                  u.userId === friend.userId
+                    ? { ...u, lastMessage: newMessage }
+                    : u
+                );
 
-              updatedUsers.sort((a, b) => {
-                const aTime = a.lastMessage?.createdAt?.seconds || 0;
-                const bTime = b.lastMessage?.createdAt?.seconds || 0;
-                return bTime - aTime;
+                updatedUsers.sort((a, b) => {
+                  const aTime = a.lastMessage?.createdAt?.seconds || 0;
+                  const bTime = b.lastMessage?.createdAt?.seconds || 0;
+                  return bTime - aTime;
+                });
+
+                return [...updatedUsers];
               });
-
-              return [...updatedUsers];
-            });
-          });
+            },
+            (error) => {
+              console.error("Error Home fetchIntialuser : ", error);
+            }
+          );
           messageListeners.current.set(roomId, unsub);
         }
 
@@ -131,25 +145,32 @@ export default function Home() {
     useCallback(() => {
       setLoading(true);
       fetchInitialUsers().then(() => {
-        const unsubscribe = onSnapshot(
+        // Set up a listener for the user document to listen to changes in friends
+        const unsubscribeUser = onSnapshot(
           doc(usersRef, user?.userId),
           (docSnap) => {
             const friendIds = docSnap.data()?.friends || [];
-            listenToFriendStatus(friendIds);
+            listenToFriendStatus(friendIds); // Function to handle friend status updates
           }
         );
 
+        // Clean up both the user document listener and all dynamic listeners
         return () => {
-          unsubscribe();
+          // Unsubscribe from the user document listener
+          unsubscribeUser();
+
+          // Unsubscribe from all listeners related to friends' messages
           listeners.current.forEach((unsub) => unsub());
           listeners.current.clear();
+
+          // Unsubscribe from all message listeners for rooms
           messageListeners.current.forEach((unsub) => unsub());
           messageListeners.current.clear();
         };
       });
     }, [user])
   );
-
+  
   const sortedUsers = useMemo(() => {
     return [...users].sort((a, b) => {
       const aTime = a.lastMessage?.createdAt?.seconds || 0;

@@ -47,18 +47,6 @@ export default function SignIn() {
     return <Text>Loading fonts...</Text>;
   }
 
-  const auth = getAuth();
-  sendPasswordResetEmail(auth)
-    .then(() => {
-      // Password reset email sent!
-      // ..
-    })
-    .catch((error) => {
-      const errorCode = error.code;
-      const errorMessage = error.message;
-      // ..
-    });
-
   const handleLogin = async () => {
     if (!emailRef.current || !passRef.current) {
       Alert.alert("Sign In", "Please fill all the fields!!");

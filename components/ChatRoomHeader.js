@@ -21,19 +21,20 @@ export default function ChatRoomHeader({ user, router }) {
         (snapshot) => {
           const data = snapshot.data();
           if (data) {
-            setLastSeen(data.lastSeen);
+            setLastSeen(data.lastSeen); // Update lastSeen whenever Firestore updates
           }
         }
       );
-      return () => unsubscribe();
+
+      return () => unsubscribe(); // Clean up the listener when the component unmounts
     }
   }, [user]);
 
   const renderTime = () => {
     if (lastSeen) {
-      return formatMessageTime(lastSeen);
+      return formatMessageTime(lastSeen); // Format the lastSeen timestamp
     }
-    return "";
+    return "Active Now"; // Default message when lastSeen is not available
   };
 
   return (
@@ -46,19 +47,21 @@ export default function ChatRoomHeader({ user, router }) {
             <TouchableOpacity onPress={() => router.back()}>
               <Entypo name="chevron-left" size={hp(3)} color="#737373" />
             </TouchableOpacity>
-            <View className="flex-row items-center gap-3 ">
+            <View className="flex-row items-center gap-3">
               <Image
                 source={user?.profileURL}
                 style={{ height: hp(4.5), aspectRatio: 1, borderRadius: 100 }}
               />
-              <View className="">
+              <View>
                 <Text
                   style={{ fontSize: hp(2.5), marginBottom: -1 }}
                   className="text-neutral-700 font-medium"
                 >
                   {user?.profileName}
                 </Text>
-                <Text style={{ fontSize: hp(1.6) }}>Active {renderTime() === "" ? "Now" : renderTime()}</Text>
+                <Text style={{ fontSize: hp(1.6) }}>
+                  {lastSeen !== "Active Now"  ? `Active ${renderTime()}` : "Active Now"}
+                </Text>
               </View>
             </View>
           </View>
