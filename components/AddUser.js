@@ -10,9 +10,7 @@ import React, { useState } from "react";
 import { StyleSheet } from "react-native";
 import { useAuth } from "../context/authContext";
 import {
-  addDoc,
   arrayUnion,
-  collection,
   doc,
   getDoc,
   getDocs,
@@ -22,54 +20,72 @@ import {
 } from "firebase/firestore";
 import { usersRef } from "../firebaseConfig";
 
-export default function AddUser({ modalVisible, setModalVisible, refreshUsers }) {
+export default function AddUser({ modalVisible, setModalVisible, addNewFriend }) {
   const [frndProfile, setFrndProfile] = useState("");
-
+  const [adding, setAdding] = useState(false);  // State to track loading
   const { user } = useAuth();
 
   const handleAddFriend = async () => {
-    if (!user) {
+    if (!user || adding) {
       return;
     }
+    setAdding(true);  // Start loading
 
-    // Step 1 : Search for user by profile name
-    const qry = query(usersRef, where("profileName", "==", frndProfile));
-    const qrySnapShot = await getDocs(qry);
+    try {
+      // Step 1: Search for user by profile name
+      const qry = query(usersRef, where("profileName", "==", frndProfile));
+      const qrySnapShot = await getDocs(qry);
 
-    if (qrySnapShot.empty) {
-      Alert.alert("User Not Found");
-      return;
+      if (qrySnapShot.empty) {
+        Alert.alert("User Not Found");
+        setAdding(false);
+        return;
+      }
+
+      const friend = qrySnapShot.docs[0];
+      const frndID = friend.id;
+      const friendData = friend.data();
+
+      // Step 2: Check if already connected
+      const currentUserRef = doc(usersRef, user?.userId);
+      const friendUserRef = doc(usersRef, frndID);
+
+      const currentUserDoc = await getDoc(currentUserRef);
+      const friends = currentUserDoc.data()?.friends || [];
+
+      if (friends.includes(frndID)) {
+        Alert.alert("Already added to Friends.");
+        setAdding(false);
+        return;
+      }
+
+      // Step 3: Update both users' friend arrays
+      await updateDoc(currentUserRef, {
+        friends: arrayUnion(frndID),
+      });
+      await updateDoc(friendUserRef, {
+        friends: arrayUnion(user?.userId),
+      });
+
+      // Call the callback to immediately add the user
+      addNewFriend({
+        ...friendData,
+        userId: frndID,
+        lastMessage: null,  // Set last message to null initially
+      });
+
+      Alert.alert("Friend Added!");
+      
+      setModalVisible(false);
+      setFrndProfile("");
+    } catch (error) {
+      console.error("Error adding friend: ", error);
+      Alert.alert("Error", "Something went wrong. Please try again.");
+    } finally {
+      setAdding(false);  // Stop loading
     }
-
-    const friend = qrySnapShot.docs[0];
-    const frndID = friend.id;
-    
-    // Step 2 : Check if already connected
-    const currentUserRef = doc(usersRef, user?.userId);
-    const friendUserRef = doc(usersRef, frndID);
-    
-    const currentUserDoc = await getDoc(currentUserRef);
-    const friends = currentUserDoc.data()?.friends || [];
-
-    if (friends.includes(frndID)) {
-      Alert.alert("Already added to Friends.");
-      return;
-    }
-
-    // Step 3 : Update both users' friend arrays
-    await updateDoc(currentUserRef, {
-      friends: arrayUnion(frndID),
-    });
-    await updateDoc(friendUserRef, {
-      friends: arrayUnion(user?.userId),
-    });
-
-    Alert.alert("Friend Added!!!");
-
-    refreshUsers()
-    setModalVisible(false)
-    setFrndProfile("")
   };
+
   return (
     <Modal
       visible={modalVisible}
@@ -84,21 +100,25 @@ export default function AddUser({ modalVisible, setModalVisible, refreshUsers })
           <TextInput
             value={frndProfile}
             onChangeText={(text) => setFrndProfile(text)}
-            placeholder="Enter your friend's profile"
+            placeholder="Enter friend's profile"
             style={styles.input}
           />
 
           <View style={styles.btnContainer}>
             <TouchableOpacity
-              style={{ backgroundColor: "blue", padding: 15, borderRadius: 8 }}
+              style={[
+                styles.btnAdd,
+                adding ? { backgroundColor: "gray" } : {},  // Disable button if loading
+              ]}
               onPress={handleAddFriend}
+              disabled={adding}
             >
-              <Text className="text-white">Add</Text>
+              <Text style={styles.btnText}>
+                {adding ? "Adding..." : "Add"}
+              </Text>
             </TouchableOpacity>
             <TouchableOpacity
-              onPress={() => {
-                setModalVisible(false);
-              }}
+              onPress={() => setModalVisible(false)}
             >
               <Text style={styles.btnCancel}>Cancel</Text>
             </TouchableOpacity>
@@ -146,6 +166,16 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     width: "100%",
+  },
+  btnAdd: {
+    backgroundColor: "blue",
+    padding: 15,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  btnText: {
+    color: "white",
+    fontWeight: "bold",
   },
   btnCancel: {
     color: "red",

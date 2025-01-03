@@ -43,11 +43,17 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const listeners = useRef(new Map());
   const messageListeners = useRef(new Map());
+  const unsubscribeUser = useRef(null);
+  const dataFetched = useRef(false);  // Flag to track if data is already fetched
 
-  // Fetch initial friend list and last messages
+  const addNewUser = (newFriend) => {
+    setUsers((prevUsers) => [...prevUsers, newFriend]);
+  };
+  
   const fetchInitialUsers = async () => {
-    if (!user?.userId) return;
+    if (!user?.userId || dataFetched.current) return;
 
+    setLoading(true);
     const currentUserDoc = await getDoc(doc(usersRef, user?.userId));
     const friendIds = currentUserDoc.data()?.friends || [];
 
@@ -75,31 +81,17 @@ export default function Home() {
         let lastMessage = lastMessageSnap.docs[0]?.data();
 
         if (!messageListeners.current.has(roomId)) {
-          const unsub = onSnapshot(
-            q,
-            (snap) => {
-              const newMessage = snap.docs[0]?.data();
-
-              setUsers((prevUsers) => {
-                const updatedUsers = prevUsers.map((u) =>
-                  u.userId === friend.userId
-                    ? { ...u, lastMessage: newMessage }
-                    : u
-                );
-
-                updatedUsers.sort((a, b) => {
-                  const aTime = a.lastMessage?.createdAt?.seconds || 0;
-                  const bTime = b.lastMessage?.createdAt?.seconds || 0;
-                  return bTime - aTime;
-                });
-
-                return [...updatedUsers];
-              });
-            },
-            (error) => {
-              console.error("Error Home fetchIntialuser : ", error);
-            }
-          );
+          const unsub = onSnapshot(q, (snap) => {
+            const newMessage = snap.docs[0]?.data();
+            setUsers((prevUsers) => {
+              const updatedUsers = prevUsers.map((u) =>
+                u.userId === friend.userId
+                  ? { ...u, lastMessage: newMessage }
+                  : u
+              );
+              return updatedUsers;
+            });
+          });
           messageListeners.current.set(roomId, unsub);
         }
 
@@ -107,13 +99,8 @@ export default function Home() {
       })
     );
 
-    usersWithLastMessage.sort((a, b) => {
-      const aTime = a.lastMessage?.createdAt?.seconds || 0;
-      const bTime = b.lastMessage?.createdAt?.seconds || 0;
-      return bTime - aTime;
-    });
-
     setUsers(usersWithLastMessage);
+    dataFetched.current = true;  // Mark data as fetched
     setLoading(false);
   };
 
@@ -123,17 +110,9 @@ export default function Home() {
         const unsub = onSnapshot(doc(usersRef, friendId), (docSnap) => {
           const updatedUser = docSnap.data();
           setUsers((prevUsers) => {
-            const updatedUsers = prevUsers.map((u) =>
+            return prevUsers.map((u) =>
               u.userId === friendId ? { ...u, ...updatedUser } : u
             );
-
-            updatedUsers.sort((a, b) => {
-              const aTime = a.lastMessage?.createdAt?.seconds || 0;
-              const bTime = b.lastMessage?.createdAt?.seconds || 0;
-              return bTime - aTime;
-            });
-
-            return [...updatedUsers];
           });
         });
         listeners.current.set(friendId, unsub);
@@ -143,34 +122,28 @@ export default function Home() {
 
   useFocusEffect(
     useCallback(() => {
-      setLoading(true);
-      fetchInitialUsers().then(() => {
-        // Set up a listener for the user document to listen to changes in friends
-        const unsubscribeUser = onSnapshot(
+      if (!dataFetched.current) {
+        fetchInitialUsers();
+      }
+
+      if (!unsubscribeUser.current && user?.userId) {
+        unsubscribeUser.current = onSnapshot(
           doc(usersRef, user?.userId),
           (docSnap) => {
             const friendIds = docSnap.data()?.friends || [];
-            listenToFriendStatus(friendIds); // Function to handle friend status updates
+            listenToFriendStatus(friendIds);
           }
         );
+      }
 
-        // Clean up both the user document listener and all dynamic listeners
-        return () => {
-          // Unsubscribe from the user document listener
-          unsubscribeUser();
-
-          // Unsubscribe from all listeners related to friends' messages
-          listeners.current.forEach((unsub) => unsub());
-          listeners.current.clear();
-
-          // Unsubscribe from all message listeners for rooms
-          messageListeners.current.forEach((unsub) => unsub());
-          messageListeners.current.clear();
-        };
-      });
+      return () => {
+        // Unsubscribe only when component unmounts
+        unsubscribeUser.current?.();
+        unsubscribeUser.current = null;
+      };
     }, [user])
   );
-  
+
   const sortedUsers = useMemo(() => {
     return [...users].sort((a, b) => {
       const aTime = a.lastMessage?.createdAt?.seconds || 0;
@@ -203,11 +176,12 @@ export default function Home() {
       <AddUser
         modalVisible={showModal}
         setModalVisible={setShowModal}
-        refreshUsers={fetchInitialUsers}
+        addNewFriend = {addNewUser}
       />
     </View>
   );
 }
+
 
 const styles = StyleSheet.create({
   touchBtn: {
