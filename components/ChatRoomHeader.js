@@ -13,6 +13,7 @@ import { db } from "../firebaseConfig";
 
 export default function ChatRoomHeader({ user, router }) {
   const [lastSeen, setLastSeen] = useState(null);
+  const [status, setStatus] = useState(null);
 
   useEffect(() => {
     if (user?.userId) {
@@ -22,6 +23,7 @@ export default function ChatRoomHeader({ user, router }) {
           const data = snapshot.data();
           if (data) {
             setLastSeen(data.lastSeen); // Update lastSeen whenever Firestore updates
+            setStatus(data.status);
           }
         }
       );
@@ -43,9 +45,12 @@ export default function ChatRoomHeader({ user, router }) {
         title: "",
         headerShadowVisible: false,
         headerLeft: () => (
-          <View className="flex-row items-center gap-4">
-            <TouchableOpacity onPress={() => router.back()}>
-              <Entypo name="chevron-left" size={hp(3)} color="#737373" />
+          <View className="flex-row items-center gap-2">
+            <TouchableOpacity
+              onPress={() => router.back()}
+              style={{ padding: 1 }}
+            >
+              <Entypo name="chevron-left" size={hp(3.3)} color="#737373" />
             </TouchableOpacity>
             <View className="flex-row items-center gap-3">
               <Image
@@ -60,7 +65,11 @@ export default function ChatRoomHeader({ user, router }) {
                   {user?.profileName}
                 </Text>
                 <Text style={{ fontSize: hp(1.6) }}>
-                  {lastSeen !== "Active Now"  ? `Active ${renderTime()}` : "Active Now"}
+                  {status === "online"
+                    ? "Active Now"
+                    : status === "offline"
+                    ? "Just Now"
+                    : `Active ${renderTime()}`}
                 </Text>
               </View>
             </View>

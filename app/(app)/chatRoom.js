@@ -22,6 +22,7 @@ import {
   addDoc,
   collection,
   doc,
+  getDoc,
   getDocs,
   onSnapshot,
   orderBy,
@@ -40,9 +41,11 @@ export default function ChatRoom() {
   const { user } = useAuth();
   const router = useRouter();
   const [messages, setMessages] = useState([]);
+  const [isTyping, setIsTyping] = useState(false);
   const textRef = useRef("");
   const inputRef = useRef(null);
   const scrollViewRef = useRef(null);
+  let typingTimeout;
 
   useEffect(() => {
     createRoomIfNotExist();
@@ -154,6 +157,7 @@ export default function ChatRoom() {
   const handleSendMessage = async () => {
     let message = textRef.current.trim();
     if (!message) return;
+    setIsTyping(false);
 
     try {
       let roomId = getRoomID(user?.userId, item?.userId);
@@ -161,23 +165,120 @@ export default function ChatRoom() {
       const messagesRef = collection(docRef, "messages");
 
       textRef.current = "";
+
       if (inputRef.current) {
         inputRef.current.clear();
         inputRef.current.focus();
       }
 
-      await addDoc(messagesRef, {
+      const messageData = {
         userId: user?.userId,
         text: message,
         profileURL: user?.profileURL,
         senderName: user?.profileName,
         createdAt: serverTimestamp(),
         isReaded: false,
-      });
+      };
+
+      const newMessageRef = await addDoc(messagesRef, messageData);
+
+      // Immediately mark as read if the recipient is in the same room
+      const recipientRef = doc(db, "users", item?.userId);
+      const recipientSnap = await getDoc(recipientRef);
+
+      if (
+        recipientSnap.exists() &&
+        recipientSnap.data().activeRoom === roomId
+      ) {
+        await updateDoc(newMessageRef, { isReaded: true });
+      }
     } catch (error) {
       console.error("Error sending message:", error);
     }
   };
+
+  // Users Presence in active room
+  const updateActiveRoom = async (roomId) => {
+    if (user?.userId) {
+      const userRef = doc(db, "users", user?.userId);
+      await updateDoc(userRef, {
+        activeRoom: roomId,
+        lastSeen: serverTimestamp(),
+      });
+    }
+  };
+
+  const clearActiveRoom = async () => {
+    if (user?.userId) {
+      const userRef = doc(db, "users", user?.userId);
+      await updateDoc(userRef, {
+        activeRoom: null,
+        lastSeen: serverTimestamp(),
+      });
+    }
+  };
+  const updateTypingStatus = (isTyping) => {
+    if (user?.userId) {
+      const userRef = doc(db, "users", user?.userId);
+      clearTimeout(typingTimeout);
+
+      // Set typing to true
+      if (isTyping) {
+        updateDoc(userRef, {
+          isTyping: true,
+          activeRoom: getRoomID(user?.userId, item?.userId),
+        });
+
+        // Reset typing status after 3 seconds of inactivity
+        typingTimeout = setTimeout(() => {
+          updateDoc(userRef, { isTyping: false });
+        }, 1500);
+      } else {
+        // Directly set to false when typing stops
+        updateDoc(userRef, { isTyping: false });
+      }
+    }
+  };
+
+  useEffect(() => {
+    let roomId = getRoomID(user?.userId, item?.userId);
+    updateActiveRoom(roomId); // Mark as active in the room
+
+    return () => {
+      clearActiveRoom(); // Clear on leaving room
+    };
+  }, []);
+
+  useEffect(() => {
+    let roomId = getRoomID(user?.userId, item?.userId);
+    const recipientRef = doc(db, "users", item?.userId);
+
+    const unsub = onSnapshot(recipientRef, async (snapshot) => {
+      const data = snapshot.data();
+
+      if (data?.activeRoom === roomId) {
+        await markMessagesAsRead(); // Mark messages as read in real-time
+      }
+    });
+
+    return () => unsub();
+  }, []);
+
+  // Listen for changes in friend's typing status
+  useEffect(() => {
+    const friendRef = doc(db, "users", item?.userId);
+    const unsub = onSnapshot(friendRef, (snapshot) => {
+      const data = snapshot.data();
+      if (data?.activeRoom === getRoomID(user?.userId, item?.userId)) {
+        setIsTyping(data.isTyping);
+      } else {
+        setIsTyping(false);
+      }
+    });
+
+    return () => unsub();
+  }, [item?.userId]);
+
   return (
     <CustomKeyboardView inChat={true}>
       <View className="flex-1 bg-white">
@@ -189,12 +290,17 @@ export default function ChatRoom() {
             scrollViewRef={scrollViewRef}
             messages={messages}
             currentUser={user}
+            isTyping={isTyping}
           />
+
           <View style={{ marginBottom: hp(2.5) }} className="pt-2">
             <View className="flex-row mx-3 justify-between items-center p-1 bg-white border border-neutral-300 rounded-full pl-3">
               <TextInput
                 ref={inputRef}
-                onChangeText={(value) => (textRef.current = value)}
+                onChangeText={(value) => {
+                  textRef.current = value;
+                  updateTypingStatus(value.length > 0);
+                }}
                 placeholder="Type Message..."
                 style={{
                   fontSize: hp(1.9),
@@ -213,7 +319,7 @@ export default function ChatRoom() {
               <TouchableOpacity
                 onPress={handleSendMessage}
                 className="bg-neutral-200 p-2 mr-[1px] rounded-full items-center justify-center"
-                style={{height : hp(5), width : hp(5)}}
+                style={{ height: hp(5), width: hp(5) }}
               >
                 <MaterialCommunityIcons
                   name="send"

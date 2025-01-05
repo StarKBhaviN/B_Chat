@@ -26,9 +26,9 @@ export const AuthContextProvide = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(undefined);
 
   // Function to update user's online status
-  const updateUserStatus = async (userId, status) => {
+  const updateUserStatus = async (userId, status, lastSeen) => {
     const docRef = doc(db, "users", userId);
-    await updateDoc(docRef, { status }); // Update user status
+    await updateDoc(docRef, { status, lastSeen: lastSeen }); // Update user status
   };
 
   useEffect(() => {
@@ -37,8 +37,8 @@ export const AuthContextProvide = ({ children }) => {
       if (user) {
         setIsAuthenticated(true);
         setUser(user);
+        updateUserStatus(user.uid, "online","online");
         updateUserData(user.uid);
-        updateUserStatus(user.uid, "online");
       } else {
         setIsAuthenticated(false);
         setUser(null);

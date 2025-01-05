@@ -4,7 +4,7 @@
     "slug": "B_Chat",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/B.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -13,7 +13,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "foregroundImage": "./assets/images/B.png",
         "backgroundColor": "#ffffff"
       },
       "permissions": [
@@ -31,7 +31,7 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash-icon.png",
+          "image": "./assets/images/B.png",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
@@ -52,6 +52,9 @@
       "router": {
         "origin": false
       },
+      "eas": {
+        "projectId": "2cbb0d5b-180e-4544-bde2-0fb75ebf9e66"
+      }
     },
     "owner": "starkbhavin"
   }
