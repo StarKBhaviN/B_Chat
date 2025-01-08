@@ -177,6 +177,7 @@ export default function ChatRoom() {
         profileURL: user?.profileURL,
         senderName: user?.profileName,
         createdAt: serverTimestamp(),
+        localSendTime : new Date(),
         isReaded: false,
       };
 
@@ -313,6 +314,7 @@ export default function ChatRoom() {
                 }}
                 multiline={true}
                 className="flex-1 mr-2"
+                maxLength={600}
                 returnKeyType="send"
                 onSubmitEditing={handleSendMessage} // Sends on "Enter"
               />
