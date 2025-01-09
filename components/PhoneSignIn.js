@@ -9,7 +9,7 @@ import {
   Alert,
 } from "react-native";
 import React, { useRef, useState } from "react";
-import { FirebaseRecaptchaVerifierModal } from "expo-firebase-recaptcha";
+// import { FirebaseRecaptchaVerifierModal } from "expo-firebase-recaptcha";
 import { auth } from "../firebaseConfig";
 import {
   getAuth,
@@ -61,10 +61,10 @@ export default function PhoneSignIn({ setModalVisible, modalVisible }) {
       <View style={styles.modalContainer}>
         <View style={styles.popupView}>
           <Text style={styles.title}>Login with Phone</Text>
-          <FirebaseRecaptchaVerifierModal
+          {/* <FirebaseRecaptchaVerifierModal
             ref={recaptchaVerifier}
             firebaseConfig={auth.app.options}
-          />
+          /> */}
           <TextInput
             value={phoneNumber}
             onChangeText={(text) => setPhoneNumber(text)}

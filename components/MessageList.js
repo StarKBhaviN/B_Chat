@@ -1,5 +1,5 @@
 import { View, Text, ScrollView } from "react-native";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import MessageItem from "./MessageItem";
 import Typing from "./Typing";
 
@@ -9,6 +9,25 @@ export default function MessageList({
   scrollViewRef,
   isTyping,
 }) {
+  const [unreadIndex, setUnreadIndex] = useState(null);
+
+  useEffect(() => {
+    const firstUnreadIndex = messages.findIndex(
+      (message) => !message.isReaded && message.userId !== currentUser.userId
+    );
+    setUnreadIndex(firstUnreadIndex);
+  }, []); // Removed messages from here so unread wont work
+
+  // useEffect(() => {
+  //   if (unreadIndex !== null && unreadIndex !== -1) {
+  //     setTimeout(() => {
+  //       scrollViewRef?.current?.scrollTo({
+  //         y: 10, // Adjust based on message height
+  //         animated: true,
+  //       });
+  //     }, 30000);
+  //   }
+  // }, [unreadIndex]);
   return (
     <ScrollView
       ref={scrollViewRef}
@@ -21,11 +40,16 @@ export default function MessageList({
     >
       {messages.map((message, index) => {
         return (
-          <MessageItem
-            message={message}
-            key={index}
-            currentUser={currentUser}
-          />
+          <View key={index}>
+            {index === unreadIndex && unreadIndex !== -1 && (
+              <View style={styles.unreadDivider}>
+                <Text style={styles.unreadText}>
+                  {messages.length - unreadIndex} unread messages
+                </Text>
+              </View>
+            )}
+            <MessageItem message={message} currentUser={currentUser} />
+          </View>
         );
       })}
 
@@ -33,3 +57,17 @@ export default function MessageList({
     </ScrollView>
   );
 }
+
+const styles = {
+  unreadDivider: {
+    paddingVertical: 8,
+    backgroundColor: "#FFD700",
+    alignItems: "center",
+    marginVertical: 8,
+    borderRadius: 5,
+  },
+  unreadText: {
+    color: "#333",
+    fontWeight: "bold",
+  },
+};

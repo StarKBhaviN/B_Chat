@@ -8,6 +8,7 @@ import {
   TouchableWithoutFeedback
 } from "react-native";
 import React from "react";
+import { Entypo, MaterialIcons } from "@expo/vector-icons";
 
 export default function MessageOpModal({
   modalVisible,
@@ -25,7 +26,22 @@ export default function MessageOpModal({
         <View style={styles.modalBackdrop}>
           <TouchableWithoutFeedback>
             <View style={[styles.popupView,{position : "absolute", top : modalPosition.top, left : modalPosition.left}]}>
-              <Text>Hey</Text>
+              <TouchableOpacity style={styles.innerBtns}>
+                <MaterialIcons style={{marginRight : 6}} name="delete-forever" size={20} color={"white"}/>
+                <Text style={styles.modalText}>Delete For Everyone</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.innerBtns}>
+                <MaterialIcons style={{marginRight : 6}} name="delete" size={20} color={"white"}/>
+                <Text style={styles.modalText}>Delete For Me</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.innerBtns}>
+                <Entypo style={{marginRight : 6}} name="forward" size={20} color={"white"}/>
+                <Text style={styles.modalText}>Forward Message</Text>
+              </TouchableOpacity>
+              <View style={{display : "flex", alignItems : "flex-end", justifyContent : "flex-end", width : 200, padding : 4, paddingRight : 12}}>
+                <Text style={[styles.modalText,{fontSize : 12, color : "rgb(165, 159, 159)"}]}>Delivered @ 10.00 PM</Text>
+                <Text style={[styles.modalText,{fontSize : 12, color : "rgb(165, 159, 159)"}]}>Readed @ 10.40 PM</Text>
+              </View>
             </View>
           </TouchableWithoutFeedback>
         </View>
@@ -36,11 +52,14 @@ export default function MessageOpModal({
 
 const styles = StyleSheet.create({
   popupView: {
-    width: 200,
-    backgroundColor: "red",
+    flex : 1,
+    justifyContent : "flex-start",
+    alignItems: "flex-start",
+    // width: 200,
+    backgroundColor: "rgb(39, 36, 36)",
     borderRadius: 10,
-    padding: 20,
-    alignItems: "center",
+    // paddingHorizontal: 15,
+    paddingVertical : 6,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
@@ -49,9 +68,18 @@ const styles = StyleSheet.create({
   },
   modalBackdrop: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.3)",
-    justifyContent: "center",
-    alignItems: "center",
+    backgroundColor: "transparent",
+  },
+  innerBtns : {
+    flex : 1,
+    flexDirection : "row",
+    alignItems : "center",
+    justifyContent : "flex-start",
+    // backgroundColor : "red",
+    borderRadius: 10,
+    paddingHorizontal: 15,
+    paddingVertical : 10,
+    width : 200
   },
   title: {
     fontSize: 20,
@@ -77,4 +105,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
     fontSize: 16,
   },
+  modalText : {
+    color : "white"
+  }
 });
