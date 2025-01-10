@@ -15,17 +15,25 @@ import {
   MenuTrigger,
 } from "react-native-popup-menu";
 import { MenuItems } from "./CustomMenuItems";
-import { AntDesign, Feather } from "@expo/vector-icons";
+import { AntDesign, Feather, Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 
 const ios = Platform.OS == "ios";
 
-export default function HomeHeader({ title = "Chats", showProfile = true }) {
+export default function HomeHeader({
+  title = "Chats",
+  showProfile = true,
+  showBack = false,
+}) {
   const { user, logout } = useAuth();
   const { top } = useSafeAreaInsets();
 
   const handleProfile = () => {
-    router.push("profile")
+    router.push("profile");
+  };
+
+  const handleSettings = () => {
+    router.push("settings");
   };
   const handleLogout = async () => {
     await logout();
@@ -71,6 +79,12 @@ export default function HomeHeader({ title = "Chats", showProfile = true }) {
               />
               <Divider />
               <MenuItems
+                text="Settings"
+                action={handleSettings}
+                icon={<Feather name="settings" size={hp(2.5)} />}
+              />
+              <Divider />
+              <MenuItems
                 text="Sign Out"
                 action={handleLogout}
                 icon={<AntDesign name="logout" size={hp(2.5)} />}
@@ -78,6 +92,10 @@ export default function HomeHeader({ title = "Chats", showProfile = true }) {
             </MenuOptions>
           </Menu>
         </View>
+      )}
+
+      {showBack && (
+        <Ionicons name="arrow-back" size={24} style={{padding : 4}} color={"white"} onPress={() => router.back()}/>
       )}
     </View>
   );
@@ -87,6 +105,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
+    alignItems : "center",
     paddingHorizontal: 20,
     backgroundColor: "#6366f1", // indigo-400
     paddingBottom: 16,
