@@ -37,7 +37,7 @@ export const AuthContextProvide = ({ children }) => {
       if (user) {
         setIsAuthenticated(true);
         setUser(user);
-        updateUserStatus(user.uid, "online","online");
+        updateUserStatus(user.uid, "online", "online");
         updateUserData(user.uid);
       } else {
         setIsAuthenticated(false);
@@ -74,6 +74,11 @@ export const AuthContextProvide = ({ children }) => {
       let msg = error.message;
       if (msg.includes("(auth/invalid-email)")) {
         msg = "Invalid Email";
+      } else if (
+        msg.includes("(auth/user-not-found)") ||
+        msg.includes("(auth/wrong-password)")
+      ) {
+        msg = "Please login with correct credentials";
       }
       return { success: false, msg };
     }
@@ -98,7 +103,7 @@ export const AuthContextProvide = ({ children }) => {
     }
   };
 
-  const register = async (email, password, profileName, profileURL) => {
+  const register = async (email, password, profileName, profileURL, bio) => {
     try {
       const resp = await createUserWithEmailAndPassword(auth, email, password);
 
@@ -107,6 +112,7 @@ export const AuthContextProvide = ({ children }) => {
         profileName,
         profileURL: profileURL, // Save the uploaded image URL or the original URL
         email: email,
+        bio: bio,
         userId: resp?.user?.uid,
         status: "online",
       })
@@ -122,6 +128,8 @@ export const AuthContextProvide = ({ children }) => {
       let msg = error.message;
       if (msg.includes("(auth/invalid-email)")) {
         msg = "Invalid Email";
+      } else if(msg.includes("(auth/weak-password)")){
+        msg = "Password length must be atleast 6 charecters."
       }
       return { success: false, msg };
     }

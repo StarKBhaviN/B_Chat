@@ -14,7 +14,7 @@ import {
   heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
 import { StatusBar } from "expo-status-bar";
-import { Entypo, Octicons } from "@expo/vector-icons";
+import { Entypo, MaterialIcons, Octicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import Loading from "../components/Loading";
 import CustomKeyboardView from "../components/CustomKeyboardView";
@@ -38,7 +38,7 @@ export default function SignUp() {
 
   const emailRef = useRef();
   const passRef = useRef();
-  const profileURLRef = useRef();
+  const bioRef = useRef();
   const userNameRef = useRef();
 
   const pickImage = async () => {
@@ -122,7 +122,8 @@ export default function SignUp() {
       emailRef.current,
       passRef.current,
       userNameRef.current,
-      uploadedImageUrl
+      uploadedImageUrl,
+      bioRef.current
     );
 
     setLoading(false);
@@ -222,6 +223,30 @@ export default function SignUp() {
                       color={"gray"}
                     />
                   </TouchableOpacity>
+                </View>
+              </View>
+
+              {/* Bio Input */}
+              <View className="gap-3">
+                <View
+                  style={{ height: hp(7) }}
+                  className="flex-row px-4 gap-3 bg-neutral-200 items-center rounded-2xl p-2 bg-gray-400"
+                >
+                  <MaterialIcons
+                    name="photo-filter"
+                    style={{ width: wp(6.6), textAlign: "center" }}
+                    size={hp(2.7)}
+                    color="gray"
+                  />
+                  <TextInput
+                    onChangeText={(value) => (bioRef.current = value || "")}
+                    style={{ fontSize: hp(2) }}
+                    className="flex-1 font-semibold text-neutral-700"
+                    placeholder="Add Bio"
+                    multiline
+                    secureTextEntry={showPass}
+                    placeholderTextColor={"gray"}
+                  />
                 </View>
               </View>
 

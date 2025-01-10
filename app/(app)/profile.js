@@ -40,24 +40,43 @@ export default function Profile() {
       <View style={styles.profileCard}>
         {/* Profile Image */}
         <View style={styles.profileImageContainer}>
-          <Image source={{ uri: userData?.profileURL }} style={styles.profileImage} />
+          <Image
+            source={{ uri: userData?.profileURL }}
+            style={styles.profileImage}
+          />
         </View>
 
         {/* Profile Name */}
-        <Text style={styles.profileName}>{userData?.profileName || "No Name"}</Text>
+        <Text style={styles.profileName}>
+          {userData?.profileName || "No Name"}
+        </Text>
 
         {/* User Email */}
         <Text style={styles.email}>{userData?.email || "No Email"}</Text>
 
+        {/* Bio */}
+        <View className="flex mb-2" style={{width : wp(70)}}>
+          <Text style={{fontSize : 18, marginBottom : 2}}>Bio </Text>
+          <View style={styles.bioView}>
+            <Text style={styles.bioText}>
+              {userData?.bio || "You have not added bio."}
+            </Text>
+          </View>
+        </View>
+
         {/* Friends Count */}
         <View style={styles.friendsContainer}>
           <Text style={styles.friendsText}>
-            Friends: {userData?.friends?.length > 0 ? userData.friends.length : 0}
+            Friends:{" "}
+            {userData?.friends?.length > 0 ? userData.friends.length : 0}
           </Text>
         </View>
 
         {/* Back Button */}
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={styles.backButton}
+        >
           <Text style={styles.backText}>Back to Home</Text>
         </TouchableOpacity>
       </View>
@@ -105,6 +124,18 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#666",
     marginBottom: 10,
+  },
+  bioView : {
+    borderWidth : 2,
+    padding : 6,
+    borderRadius : 10,
+    backgroundColor : "rgb(0, 0, 0)",
+
+  },
+  bioText: {
+    fontSize: 16,
+    color: "#fff",
+    marginBottom: 5,
   },
   friendsContainer: {
     marginBottom: 20,

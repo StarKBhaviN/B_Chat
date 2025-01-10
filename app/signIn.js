@@ -24,8 +24,7 @@ import { useFonts } from "expo-font";
 import { getAuth, sendPasswordResetEmail } from "firebase/auth";
 import ForgotPassword from "../components/ForgotPassword";
 import PhoneSignIn from "../components/PhoneSignIn.js";
-
-
+import CustomKeyboardView from "../components/CustomKeyboardView.js";
 
 export default function SignIn() {
   const router = useRouter();
@@ -72,173 +71,175 @@ export default function SignIn() {
   //   }
   // }
   return (
-    <SafeAreaView className="flex-1">
+    <SafeAreaView className="flex-1 bg-neutral-100">
       <StatusBar style="dark" />
-      <View
-        style={{ paddingHorizontal: wp(6) }}
-        className="flex-1 gap-6 bg-neutral-100"
-      >
-        <View className="items-center">
-          <Image
-            style={{ height: hp(30) }}
-            source={require("../assets/images/Auth/SignIn_bg.jpg")}
-          />
-        </View>
+      <CustomKeyboardView>
+        <View
+          style={{ paddingHorizontal: wp(6) }}
+          className="flex-1 gap-6 "
+        >
+          <View className="items-center">
+            <Image
+              style={{ height: hp(30) }}
+              source={require("../assets/images/Auth/SignIn_bg.jpg")}
+            />
+          </View>
 
-        <View className="gap-4">
-          <Text
-            style={[styles.myFont, { fontSize: hp(4) }]}
-            className="font-bol tracking-wider text-center text-neutral-800"
-          >
-            Sign In
-          </Text>
-
-          {/* Inputs */}
-          <View className="gap-3">
-            <View
-              style={{ height: hp(7) }}
-              className="flex-row px-4 gap-3 bg-neutral-200 items-center rounded-2xl"
+          <View className="gap-4">
+            <Text
+              style={[styles.myFont, { fontSize: hp(4) }]}
+              className="font-bol tracking-wider text-center text-neutral-800"
             >
-              <Octicons
-                name="mail"
-                size={hp(2.7)}
-                color="gray"
-                style={{ width: wp(6.6), textAlign: "center" }}
-              />
-              <TextInput
-                onChangeText={(value) => (emailRef.current = value)}
-                style={{ fontSize: hp(2) }}
-                className="flex-1 font-semibold text-neutral-700"
-                placeholder="Email Address"
-                placeholderTextColor={"gray"}
-              />
-            </View>
+              Sign In
+            </Text>
 
+            {/* Inputs */}
             <View className="gap-3">
               <View
                 style={{ height: hp(7) }}
                 className="flex-row px-4 gap-3 bg-neutral-200 items-center rounded-2xl"
               >
                 <Octicons
-                  name="lock"
+                  name="mail"
                   size={hp(2.7)}
                   color="gray"
                   style={{ width: wp(6.6), textAlign: "center" }}
                 />
                 <TextInput
-                  onChangeText={(value) => (passRef.current = value)}
+                  onChangeText={(value) => (emailRef.current = value)}
                   style={{ fontSize: hp(2) }}
                   className="flex-1 font-semibold text-neutral-700"
-                  placeholder="Password"
-                  secureTextEntry={!showPass}
+                  placeholder="Email Address"
                   placeholderTextColor={"gray"}
                 />
-                <TouchableOpacity onPress={() => setShowPass(!showPass)}>
-                  <Entypo
-                    name={showPass ? "eye" : "eye-with-line"}
+              </View>
+
+              <View className="gap-3">
+                <View
+                  style={{ height: hp(7) }}
+                  className="flex-row px-4 gap-3 bg-neutral-200 items-center rounded-2xl"
+                >
+                  <Octicons
+                    name="lock"
                     size={hp(2.7)}
-                    color={"gray"}
+                    color="gray"
+                    style={{ width: wp(6.6), textAlign: "center" }}
                   />
-                </TouchableOpacity>
-              </View>
-              <TouchableOpacity onPress={() => setModalVisible(true)}>
-                <Text
-                  style={{ fontSize: hp(1.8) }}
-                  className="font-semibold text-right text-neutral-600"
-                >
-                  Forgot Password?
-                </Text>
-              </TouchableOpacity>
-              <View className="mt-0">
-                {loading ? (
-                  <View className="flex-row justify-center">
-                    <Loading size={hp(7)} />
-                  </View>
-                ) : (
-                  <TouchableOpacity
-                    onPress={handleLogin}
-                    style={{ height: hp(6) }}
-                    className="bg-indigo-600 rounded-xl justify-center items-center"
-                  >
-                    <Text
-                      style={{ fontSize: hp(2.7) }}
-                      className="text-white font-bold tracking-wider"
-                    >
-                      Sign In
-                    </Text>
+                  <TextInput
+                    onChangeText={(value) => (passRef.current = value)}
+                    style={{ fontSize: hp(2) }}
+                    className="flex-1 font-semibold text-neutral-700"
+                    placeholder="Password"
+                    secureTextEntry={!showPass}
+                    placeholderTextColor={"gray"}
+                  />
+                  <TouchableOpacity onPress={() => setShowPass(!showPass)}>
+                    <Entypo
+                      name={showPass ? "eye" : "eye-with-line"}
+                      size={hp(2.7)}
+                      color={"gray"}
+                    />
                   </TouchableOpacity>
-                )}
+                </View>
+                <TouchableOpacity onPress={() => setModalVisible(true)}>
+                  <Text
+                    style={{ fontSize: hp(1.8) }}
+                    className="font-semibold text-right text-neutral-600"
+                  >
+                    Forgot Password?
+                  </Text>
+                </TouchableOpacity>
+                <View className="mt-0">
+                  {loading ? (
+                    <View className="flex-row justify-center">
+                      <Loading size={hp(7)} />
+                    </View>
+                  ) : (
+                    <TouchableOpacity
+                      onPress={handleLogin}
+                      style={{ height: hp(6) }}
+                      className="bg-indigo-600 rounded-xl justify-center items-center"
+                    >
+                      <Text
+                        style={{ fontSize: hp(2.7) }}
+                        className="text-white font-bold tracking-wider"
+                      >
+                        Sign In
+                      </Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
               </View>
-            </View>
-            <View>
-              <ForgotPassword
-                setModalVisible={setModalVisible}
-                modalVisible={modalVisible}
-              />
-            </View>
+              <View>
+                <ForgotPassword
+                  setModalVisible={setModalVisible}
+                  modalVisible={modalVisible}
+                />
+              </View>
 
-            {/* SignUp Text */}
+              {/* SignUp Text */}
 
-            <View className="flex-row justify-center">
-              <Text
-                style={{ fontSize: hp(1.8) }}
-                className="font-semibold text-neutral-500"
-              >
-                Don't Have an Account?{" "}
-              </Text>
-              <Pressable onPress={() => router.push("signUp")}>
+              <View className="flex-row justify-center">
                 <Text
                   style={{ fontSize: hp(1.8) }}
-                  className="font-semibold text-indigo-600"
+                  className="font-semibold text-neutral-500"
                 >
-                  Sign Up
+                  Don't Have an Account?{" "}
                 </Text>
-              </Pressable>
-            </View>
+                <Pressable onPress={() => router.push("signUp")}>
+                  <Text
+                    style={{ fontSize: hp(1.8) }}
+                    className="font-semibold text-indigo-600"
+                  >
+                    Sign Up
+                  </Text>
+                </Pressable>
+              </View>
 
-            <View className="gap-1 flex-column items-center">
-              <Text
-                style={{ fontSize: hp(1.8) }}
-                className="mb-2 font-semibold text-ingigo-700"
-              >
-                OR{" "}
-              </Text>
-              <Pressable
-                className="p-4 rounded-2xl px-6 flex-row items-center"
-                style={styles.googleButton}
-                onPress={() => Alert.alert("SignIn", "Coming Soon!!!")}
-              >
-                <AntDesign name="google" size={22} color={"orange"} />
+              <View className="gap-1 flex-column items-center">
                 <Text
-                  style={{ fontSize: hp(1.7) }}
-                  className="font-semibold text-indigo-600 mx-2"
+                  style={{ fontSize: hp(1.8) }}
+                  className="mb-2 font-semibold text-ingigo-700"
                 >
-                  Sign-In with Google
+                  OR{" "}
                 </Text>
-              </Pressable>
-              <Pressable
-                className="mt-2 p-4 rounded-2xl px-6 flex-row items-center"
-                style={styles.googleButton}
-                onPress={() =>setPhoneModalVisible(true)}
-              >
-                <AntDesign name="phone" size={22} color={"green"} />
-                <Text
-                  style={{ fontSize: hp(1.7) }}
-                  className="font-semibold text-indigo-600 mx-2"
+                <Pressable
+                  className="p-4 rounded-2xl px-6 flex-row items-center"
+                  style={styles.googleButton}
+                  onPress={() => Alert.alert("SignIn", "Coming Soon!!!")}
                 >
-                  Sign-In with Phone
-                </Text>
-              </Pressable>
-              <View>
-                <PhoneSignIn
-                  setModalVisible={setPhoneModalVisible}
-                  modalVisible={phonemodalVisible}
-                />
+                  <AntDesign name="google" size={22} color={"orange"} />
+                  <Text
+                    style={{ fontSize: hp(1.7) }}
+                    className="font-semibold text-indigo-600 mx-2"
+                  >
+                    Sign-In with Google
+                  </Text>
+                </Pressable>
+                <Pressable
+                  className="mt-2 p-4 rounded-2xl px-6 flex-row items-center"
+                  style={styles.googleButton}
+                  onPress={() => setPhoneModalVisible(true)}
+                >
+                  <AntDesign name="phone" size={22} color={"green"} />
+                  <Text
+                    style={{ fontSize: hp(1.7) }}
+                    className="font-semibold text-indigo-600 mx-2"
+                  >
+                    Sign-In with Phone
+                  </Text>
+                </Pressable>
+                <View>
+                  <PhoneSignIn
+                    setModalVisible={setPhoneModalVisible}
+                    modalVisible={phonemodalVisible}
+                  />
+                </View>
               </View>
             </View>
           </View>
         </View>
-      </View>
+      </CustomKeyboardView>
     </SafeAreaView>
   );
 }
