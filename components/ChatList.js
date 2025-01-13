@@ -14,7 +14,7 @@ export default function ChatList({ users, currentUser }) {
       <Animated.FlatList
         itemLayoutAnimation={SequencedTransition}
         data={users}
-        contentContainerStyle={{ paddingVertical: 25 }}
+        contentContainerStyle={{ paddingVertical: 16 }}
         keyExtractor={(item) => item.userId}
         showsVerticalScrollIndicator={false}
         renderItem={({ item, index }) => (

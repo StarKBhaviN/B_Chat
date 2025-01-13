@@ -8,6 +8,7 @@ import { MenuProvider } from "react-native-popup-menu";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { doc, serverTimestamp, updateDoc } from "firebase/firestore";
 import { usersRef } from "../firebaseConfig";
+import ThemeProvider from "../context/ThemeContext";
 
 const MainLayout = () => {
   const { isAuthenticated } = useAuth();
@@ -16,12 +17,13 @@ const MainLayout = () => {
   const appState = useRef(AppState.currentState);
   const { user } = useAuth();
 
+  // App state change online/offline
   useEffect(() => {
     const handleAppStateChange = async (nextAppState) => {
       if (user?.userId) {
         try {
           const userRef = doc(usersRef, user.userId);
-  
+
           if (appState.current === "active" && nextAppState === "background") {
             // Update Firestore on background
             await updateDoc(userRef, {
@@ -41,15 +43,18 @@ const MainLayout = () => {
       }
       appState.current = nextAppState;
     };
-  
-    const subscription = AppState.addEventListener("change", handleAppStateChange);
-  
+
+    const subscription = AppState.addEventListener(
+      "change",
+      handleAppStateChange
+    );
+
     return () => {
       subscription.remove();
     };
   }, [user]);
-  
 
+  // Verifies login status
   useEffect(() => {
     // Check if user is Authenticated or not
     if (typeof isAuthenticated === "undefined") return;
@@ -70,12 +75,14 @@ const MainLayout = () => {
 
 export default function RootLayout() {
   return (
-    <SafeAreaProvider>
-      <MenuProvider>
-        <AuthContextProvide>
-          <MainLayout />
-        </AuthContextProvide>
-      </MenuProvider>
-    </SafeAreaProvider>
+    <ThemeProvider>
+      <SafeAreaProvider>
+        <MenuProvider>
+          <AuthContextProvide>
+            <MainLayout />
+          </AuthContextProvide>
+        </MenuProvider>
+      </SafeAreaProvider>
+    </ThemeProvider>
   );
 }

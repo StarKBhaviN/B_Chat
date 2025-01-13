@@ -6,14 +6,18 @@ import {
   Pressable,
   Dimensions,
 } from "react-native";
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useContext } from "react";
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
 import MessageOpModal from "./MessageOpModal";
+import { ThemeContext } from "../context/ThemeContext";
 
 export default function MessageItem({ message, currentUser }) {
+  const {theme, colorScheme} = useContext(ThemeContext)
+  const styles = createStyles(theme, colorScheme);
+  
   const [expanded, setExpanded] = useState(false);
   const [visibleLines, setVisibleLines] = useState(8);
   const [showOpModal, setShowOpModal] = useState(false);
@@ -85,8 +89,8 @@ export default function MessageItem({ message, currentUser }) {
           <View style={{ width: wp(80) }}>
             <View
               ref={bubbleRef}
-              style={styles.messageBubble}
-              className="flex self-end p-3 rounded-2xl bg-white border border-neutral-500"
+              style={[styles.messageBubble,{backgroundColor : colorScheme === "dark" ? "#0B192C": "white"}]}
+              className="flex self-end p-3 rounded-2xl border border-neutral-500"
             >
               <Text
                 ref={textRef}
@@ -132,8 +136,8 @@ export default function MessageItem({ message, currentUser }) {
         <View style={{ width: wp(80) }} className="ml-3 mb-3">
           <View
             ref={bubbleRef}
-            style={styles.messageBubble}
-            className="flex self-start p-3 rounded-2xl bg-indigo-100 border border-indigo-200"
+            style={[styles.messageBubble,{backgroundColor : colorScheme === "dark" ? "#092635": "#ebf4ff"}]}
+            className="flex self-start p-3 rounded-2xl border border-neutral-500"
           >
             <Text
               ref={textRef}
@@ -175,28 +179,32 @@ export default function MessageItem({ message, currentUser }) {
   }
 }
 
-const styles = StyleSheet.create({
-  messageText: {
-    fontSize: hp(1.9),
-    lineHeight: hp(2.5),
-  },
-  readMore: {
-    color: "blue",
-    marginTop: 0,
-    fontSize: hp(1.6),
-  },
-  messageBubble: {
-    paddingVertical: 9,
-    paddingHorizontal: 9,
-    maxWidth: wp(70),
-  },
-  timeFont: {
-    fontSize: hp(1.2),
-    color: "gray",
-    marginTop: 2,
-  },
-  modalContainer: {
-    position: "absolute",
-    zIndex: 10,
-  },
-});
+
+function createStyles(theme, colorScheme) {
+  return StyleSheet.create({
+    messageText: {
+      color : theme.glow,
+      fontSize: hp(1.9),
+      lineHeight: hp(2.5),
+    },
+    readMore: {
+      color: "blue",
+      marginTop: 0,
+      fontSize: hp(1.6),
+    },
+    messageBubble: {
+      paddingVertical: 9,
+      paddingHorizontal: 9,
+      maxWidth: wp(70),
+    },
+    timeFont: {
+      fontSize: hp(1.2),
+      color: "gray",
+      marginTop: 2,
+    },
+    modalContainer: {
+      position: "absolute",
+      zIndex: 10,
+    },
+  });
+}

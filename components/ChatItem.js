@@ -1,6 +1,6 @@
 import { View, Text } from "react-native";
 
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { TouchableOpacity } from "react-native";
 import {
   widthPercentageToDP as wp,
@@ -20,8 +20,10 @@ import {
 } from "firebase/firestore";
 import { db } from "../firebaseConfig";
 import { Badge } from "react-native-elements";
+import { ThemeContext } from "../context/ThemeContext";
 
 export default function ChatItem({ item, router, noBorder, currentUser }) {
+  const { theme, colorScheme } = useContext(ThemeContext);
   const [lastMessage, setLastMessage] = useState(undefined);
   const [unreadCount, setUnreadCount] = useState(0);
 
@@ -94,8 +96,11 @@ export default function ChatItem({ item, router, noBorder, currentUser }) {
     <TouchableOpacity
       onPress={openChatRoom}
       className={`flex-row justify-between mx-4 items-center gap-3 mb-4 pb-2 ${
-        noBorder ? "" : "border-b b-neutral-600"
+        noBorder ? "" : `border-b`
       }`}
+      style={{
+        borderBottomColor: colorScheme === "dark" ? "#3C3C3C" : "#423b3b",
+      }}
     >
       <View style={{ alignItems: "flex-start" }}>
         <Badge
@@ -121,8 +126,11 @@ export default function ChatItem({ item, router, noBorder, currentUser }) {
       <View className="flex-1 gap-1">
         <View className="flex-row justify-between">
           <Text
-            style={{ fontSize: hp(1.8) }}
-            className="font-semibold text-neutral-800"
+            style={{
+              fontSize: hp(1.8),
+              color: colorScheme === "dark" ? "#d4d4d6" : theme.text,
+            }}
+            className="font-semibold"
           >
             {item?.profileName}
           </Text>
@@ -135,7 +143,7 @@ export default function ChatItem({ item, router, noBorder, currentUser }) {
         </View>
         <View className="flex flex-row justify-between">
           <Text
-            style={{ fontSize: hp(1.6), width: wp(70), maxHeight : hp(2.3) }}
+            style={{ fontSize: hp(1.6), width: wp(70), maxHeight: hp(2.3) }}
             className="font-medium text-neutral-500"
           >
             {renderLastMessage()}

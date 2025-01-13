@@ -11,6 +11,7 @@ import React, {
   useState,
   useRef,
   useMemo,
+  useContext,
 } from "react";
 import { useAuth } from "../../context/authContext";
 import {
@@ -35,8 +36,12 @@ import { StyleSheet } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import AddUser from "../../components/AddUser";
 import { getRoomID } from "../../utils/common";
+import { ThemeContext } from "../../context/ThemeContext";
 
 export default function Home() {
+  const { theme, colorScheme } = useContext(ThemeContext);
+  const styles = createStyles(theme, colorScheme);
+
   const { user } = useAuth();
   const [users, setUsers] = useState([]);
   const [showModal, setShowModal] = useState(false);
@@ -44,12 +49,12 @@ export default function Home() {
   const listeners = useRef(new Map());
   const messageListeners = useRef(new Map());
   const unsubscribeUser = useRef(null);
-  const dataFetched = useRef(false);  // Flag to track if data is already fetched
+  const dataFetched = useRef(false); // Flag to track if data is already fetched
 
   const addNewUser = (newFriend) => {
     setUsers((prevUsers) => [...prevUsers, newFriend]);
   };
-  
+
   const fetchInitialUsers = async () => {
     if (!user?.userId || dataFetched.current) return;
 
@@ -100,7 +105,7 @@ export default function Home() {
     );
 
     setUsers(usersWithLastMessage);
-    dataFetched.current = true;  // Mark data as fetched
+    dataFetched.current = true; // Mark data as fetched
     setLoading(false);
   };
 
@@ -153,8 +158,8 @@ export default function Home() {
   }, [users]);
 
   return (
-    <View className="flex-1 bg-white">
-      <StatusBar style="light" />
+    <View className="flex-1" style={{ backgroundColor: theme.background }}>
+      <StatusBar style={colorScheme === "dark" ? "light" : "dark"} />
       {loading ? (
         <View className="flex items-center" style={{ top: hp(30) }}>
           <ActivityIndicator size="large" />
@@ -166,7 +171,6 @@ export default function Home() {
       )}
 
       <TouchableOpacity
-        className="bg-indigo-500"
         style={styles.touchBtn}
         onPress={() => setShowModal(true)}
       >
@@ -176,23 +180,25 @@ export default function Home() {
       <AddUser
         modalVisible={showModal}
         setModalVisible={setShowModal}
-        addNewFriend = {addNewUser}
+        addNewFriend={addNewUser}
       />
     </View>
   );
 }
 
-
-const styles = StyleSheet.create({
-  touchBtn: {
-    position: "absolute",
-    bottom: hp(2.5),
-    right: wp(5),
-    width: hp(6.5),
-    height: hp(6.5),
-    borderRadius: hp(3.25),
-    justifyContent: "center",
-    alignItems: "center",
-    elevation: 5,
-  },
-});
+function createStyles(theme, colorScheme) {
+  return StyleSheet.create({
+    touchBtn: {
+      backgroundColor : "#2f3a4b",
+      position: "absolute",
+      bottom: hp(2.5),
+      right: wp(5),
+      width: hp(6.5),
+      height: hp(6.5),
+      borderRadius: hp(3.25),
+      justifyContent: "center",
+      alignItems: "center",
+      elevation: 5,
+    },
+  });
+}

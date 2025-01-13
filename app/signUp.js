@@ -7,8 +7,9 @@ import {
   Pressable,
   Alert,
   StyleSheet,
+  ScrollView,
 } from "react-native";
-import React, { useRef, useState } from "react";
+import React, { useContext, useRef, useState } from "react";
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
@@ -26,8 +27,13 @@ import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { doc, setDoc } from "firebase/firestore";
 import { auth, db } from "../firebaseConfig";
 import axios from "axios";
+import { ThemeContext } from "../context/ThemeContext";
 
 export default function SignUp() {
+  // Import theme context for using theme
+  const { colorScheme, setColorScheme, theme } = useContext(ThemeContext);
+  const styles = createStyles(theme, colorScheme);
+
   const router = useRouter();
   const { register } = useAuth();
   const [loading, setLoading] = useState(false);
@@ -100,9 +106,11 @@ export default function SignUp() {
   };
 
   const handleRegister = async () => {
-    if (!emailRef.current?.trim() ||
-    !passRef.current?.trim() ||
-    !userNameRef.current?.trim()) {
+    if (
+      !emailRef.current?.trim() ||
+      !passRef.current?.trim() ||
+      !userNameRef.current?.trim()
+    ) {
       Alert.alert("Sign Up", "Please fill all the fields!!");
       return;
     }
@@ -134,9 +142,14 @@ export default function SignUp() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-neutral-100">
-      <CustomKeyboardView>
-        <StatusBar style="dark" />
+    <SafeAreaView className="flex-1" style={styles.safeContent}>
+      <ScrollView
+        contentContainerStyle={{ flexGrow: 1 }}
+        keyboardShouldPersistTaps="handled"
+        bounces={false}
+        showsVerticalScrollIndicator={false}
+      >
+        <StatusBar style={colorScheme === "dark" ? "light" : "dark"} />
         <View style={{ paddingHorizontal: wp(6) }} className="gap-6">
           <View className="items-center">
             <Image
@@ -147,8 +160,8 @@ export default function SignUp() {
 
           <View className="gap-4">
             <Text
-              style={[styles.myFont, { fontSize: hp(4) }]}
-              className="font-bol tracking-wider text-center text-neutral-800"
+              style={[styles.myFont, { fontSize: hp(4), color: theme.glow }]}
+              className="font-bol tracking-wider text-center "
             >
               Sign Up
             </Text>
@@ -158,69 +171,72 @@ export default function SignUp() {
               {/* Name Input */}
               <View className="gap-3">
                 <View
-                  style={{ height: hp(7) }}
-                  className="flex-row px-4 gap-3 bg-neutral-200 items-center rounded-2xl p-2 bg-gray-400"
+                  style={{ height: hp(7), backgroundColor: theme.tint }}
+                  className="flex-row px-4 gap-3 items-center rounded-2xl p-2 bg-gray-400"
                 >
                   <Octicons
                     name="people"
                     style={{ width: wp(6.6), textAlign: "center" }}
                     size={hp(2.7)}
-                    color="gray"
+                    color={theme.icon}
                   />
                   <TextInput
-                    onChangeText={(value) => (userNameRef.current = value || "")}
-                    style={{ fontSize: hp(2) }}
-                    className="flex-1 font-semibold text-neutral-700"
+                    onChangeText={(value) =>
+                      (userNameRef.current = value || "")
+                    }
+                    style={{ fontSize: hp(2), color: theme.text }}
+                    className="flex-1 font-semibold"
                     placeholder="Name"
-                    placeholderTextColor={"gray"}
+                    placeholderTextColor={theme.placeholder}
                   />
                 </View>
               </View>
+
               {/* Email Input */}
               <View
-                style={{ height: hp(7) }}
-                className="flex-row px-4 gap-3 bg-neutral-200 items-center rounded-2xl p-2 bg-gray-400"
+                style={{ height: hp(7), backgroundColor: theme.tint }}
+                className="flex-row px-4 gap-3 items-center rounded-2xl p-2 bg-gray-400"
               >
                 <Octicons
                   name="mail"
                   style={{ width: wp(6.6), textAlign: "center" }}
                   size={hp(2.7)}
-                  color="gray"
+                  color={theme.icon}
                 />
                 <TextInput
                   onChangeText={(value) => (emailRef.current = value || "")}
-                  style={{ fontSize: hp(2) }}
-                  className="flex-1 font-semibold text-neutral-700"
+                  style={{ fontSize: hp(2), color: theme.text }}
+                  className="flex-1 font-semibold"
                   placeholder="Email Address"
-                  placeholderTextColor={"gray"}
+                  placeholderTextColor={theme.placeholder}
                 />
               </View>
 
               {/* Password Input */}
               <View className="gap-3">
                 <View
-                  style={{ height: hp(7) }}
-                  className="flex-row px-4 gap-3 bg-neutral-200 items-center rounded-2xl p-2 bg-gray-400"
+                  style={{ height: hp(7), backgroundColor: theme.tint }}
+                  className="flex-row px-4 gap-3 items-center rounded-2xl p-2 bg-gray-400"
                 >
                   <Octicons
                     name="lock"
                     style={{ width: wp(6.6), textAlign: "center" }}
                     size={hp(2.7)}
-                    color="gray"
+                    color={theme.icon}
                   />
                   <TextInput
                     onChangeText={(value) => (passRef.current = value || "")}
-                    style={{ fontSize: hp(2) }}
-                    className="flex-1 font-semibold text-neutral-700"
+                    style={{ fontSize: hp(2), color: theme.text }}
+                    className="flex-1 font-semibold"
                     placeholder="Password"
                     secureTextEntry={showPass}
-                    placeholderTextColor={"gray"}
+                    placeholderTextColor={theme.placeholder}
                   />
                   <TouchableOpacity onPress={() => setShowPass(!showPass)}>
                     <Entypo
                       name={showPass ? "eye" : "eye-with-line"}
                       size={hp(2.7)}
-                      color={"gray"}
+                      color={theme.icon}
                     />
                   </TouchableOpacity>
                 </View>
@@ -229,37 +245,38 @@ export default function SignUp() {
               {/* Bio Input */}
               <View className="gap-3">
                 <View
-                  style={{ height: hp(7) }}
-                  className="flex-row px-4 gap-3 bg-neutral-200 items-center rounded-2xl p-2 bg-gray-400"
+                  style={{ height: hp(7), backgroundColor: theme.tint }}
+                  className="flex-row px-4 gap-3 items-center rounded-2xl p-2 bg-gray-400"
                 >
                   <MaterialIcons
                     name="photo-filter"
                     style={{ width: wp(6.6), textAlign: "center" }}
                     size={hp(2.7)}
-                    color="gray"
+                    color={theme.icon}
                   />
                   <TextInput
                     onChangeText={(value) => (bioRef.current = value || "")}
-                    style={{ fontSize: hp(2) }}
-                    className="flex-1 font-semibold text-neutral-700"
+                    style={{ fontSize: hp(2), color: theme.text }}
+                    className="flex-1 font-semibold"
                     placeholder="Add Bio"
                     multiline
                     secureTextEntry={showPass}
-                    placeholderTextColor={"gray"}
+                    placeholderTextColor={theme.placeholder}
                   />
                 </View>
               </View>
 
+              {/* Profile pic input */}
               <View className="gap-3">
                 <View
-                  style={{ height: hp(7) }}
-                  className="flex-row px-4 gap-3 bg-neutral-200 items-center rounded-2xl p-2 bg-gray-400"
+                  style={{ height: hp(7), backgroundColor: theme.tint }}
+                  className="flex-row px-4 gap-3 items-center rounded-2xl p-2 bg-gray-400"
                 >
                   <Octicons
                     name="image"
                     style={{ width: wp(6.6), textAlign: "center" }}
                     size={hp(2.7)}
-                    color="gray"
+                    color={theme.icon}
                   />
                   {/* <TextInput
                     onChangeText={(value) => (profileURLRef.current = value)}
@@ -270,7 +287,7 @@ export default function SignUp() {
                   /> */}
                   <TouchableOpacity onPress={pickImage} className="flex-1">
                     <Text
-                      style={{ fontSize: hp(2) }}
+                      style={{ fontSize: hp(2), color: theme.text }}
                       className="font-semibold text-neutral-700"
                     >
                       {image ? "Change Profile Picture" : "Pick Profile Image"}
@@ -279,6 +296,7 @@ export default function SignUp() {
                 </View>
               </View>
 
+              {/* Sign Up Button */}
               <View>
                 {loading ? (
                   <View className="flex-row justify-center">
@@ -287,12 +305,12 @@ export default function SignUp() {
                 ) : (
                   <TouchableOpacity
                     onPress={handleRegister}
-                    style={{ height: hp(6) }}
-                    className="mt-2 bg-indigo-600 rounded-xl justify-center items-center"
+                    style={{ height: hp(6), backgroundColor: theme.specialBg }}
+                    className="mt-2 rounded-xl justify-center items-center"
                   >
                     <Text
-                      style={{ fontSize: hp(2.7) }}
-                      className="text-white font-bold tracking-wider"
+                      style={{ fontSize: hp(2.7), color: theme.glow }}
+                      className="font-bold tracking-wider"
                     >
                       Sign Up
                     </Text>
@@ -301,18 +319,17 @@ export default function SignUp() {
               </View>
 
               {/* SignUp Text */}
-
               <View className="flex-row justify-center">
                 <Text
-                  style={{ fontSize: hp(1.8) }}
-                  className="font-semibold text-neutral-500"
+                  style={{ fontSize: hp(1.8), color: theme.placeholder }}
+                  className="font-semibold"
                 >
                   Already Have an Account?{" "}
                 </Text>
                 <Pressable onPress={() => router.push("signIn")}>
                   <Text
-                    style={{ fontSize: hp(1.8) }}
-                    className="font-semibold text-indigo-600"
+                    style={{ fontSize: hp(1.8), color: theme.glow }}
+                    className="font-semibold"
                   >
                     Sign In
                   </Text>
@@ -321,13 +338,18 @@ export default function SignUp() {
             </View>
           </View>
         </View>
-      </CustomKeyboardView>
+      </ScrollView>
     </SafeAreaView>
   );
 }
 
-const styles = StyleSheet.create({
-  myFont: {
-    fontFamily: "PlayfairDisplay_500Medium",
-  },
-});
+function createStyles(theme, colorScheme) {
+  return StyleSheet.create({
+    safeContent: {
+      backgroundColor: theme.background,
+    },
+    myFont: {
+      fontFamily: "PlayfairDisplay_500Medium",
+    },
+  });
+}

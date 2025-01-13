@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   Alert,
 } from "react-native";
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { StyleSheet } from "react-native";
 import { useAuth } from "../context/authContext";
 import {
@@ -19,17 +19,25 @@ import {
   where,
 } from "firebase/firestore";
 import { usersRef } from "../firebaseConfig";
+import { ThemeContext } from "../context/ThemeContext";
 
-export default function AddUser({ modalVisible, setModalVisible, addNewFriend }) {
+export default function AddUser({
+  modalVisible,
+  setModalVisible,
+  addNewFriend,
+}) {
+  const { theme, colorScheme } = useContext(ThemeContext);
+  const styles = createStyles(theme, colorScheme);
+
   const [frndProfile, setFrndProfile] = useState("");
-  const [adding, setAdding] = useState(false);  // State to track loading
+  const [adding, setAdding] = useState(false); // State to track loading
   const { user } = useAuth();
 
   const handleAddFriend = async () => {
     if (!user || adding) {
       return;
     }
-    setAdding(true);  // Start loading
+    setAdding(true); // Start loading
 
     try {
       // Step 1: Search for user by profile name
@@ -71,18 +79,18 @@ export default function AddUser({ modalVisible, setModalVisible, addNewFriend })
       addNewFriend({
         ...friendData,
         userId: frndID,
-        lastMessage: null,  // Set last message to null initially
+        lastMessage: null, // Set last message to null initially
       });
 
       Alert.alert("Friend Added!");
-      
+
       setModalVisible(false);
       setFrndProfile("");
     } catch (error) {
       console.error("Error adding friend: ", error);
       Alert.alert("Error", "Something went wrong. Please try again.");
     } finally {
-      setAdding(false);  // Stop loading
+      setAdding(false); // Stop loading
     }
   };
 
@@ -101,26 +109,28 @@ export default function AddUser({ modalVisible, setModalVisible, addNewFriend })
             value={frndProfile}
             onChangeText={(text) => setFrndProfile(text)}
             placeholder="Enter friend's profile"
+            placeholderTextColor={theme.placeholder}
             style={styles.input}
           />
 
           <View style={styles.btnContainer}>
             <TouchableOpacity
+              className="rounded-lg"
               style={[
                 styles.btnAdd,
-                adding ? { backgroundColor: "gray" } : {},  // Disable button if loading
+                adding ? { backgroundColor: "gray" } : {}, // Disable button if loading
               ]}
               onPress={handleAddFriend}
               disabled={adding}
             >
-              <Text style={styles.btnText}>
-                {adding ? "Adding..." : "Add"}
-              </Text>
+              <Text style={styles.txtAdd}>{adding ? "Adding..." : "Add"}</Text>
             </TouchableOpacity>
             <TouchableOpacity
+              className={`flex items-center justify-center border rounded-lg ${colorScheme === "dark" ? "border-gray-700" : "border-black"}`}
+              style={styles.btnCancel}
               onPress={() => setModalVisible(false)}
             >
-              <Text style={styles.btnCancel}>Cancel</Text>
+              <Text style={styles.txtCancel}>Cancel</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -129,57 +139,64 @@ export default function AddUser({ modalVisible, setModalVisible, addNewFriend })
   );
 }
 
-const styles = StyleSheet.create({
-  modalContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "rgba(0,0,0,0.5)",
-  },
-  popUpView: {
-    width: 300,
-    backgroundColor: "#fff",
-    borderRadius: 10,
-    padding: 20,
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: "bold",
-    marginBottom: 15,
-  },
-  input: {
-    height: 40,
-    borderColor: "gray",
-    borderWidth: 1,
-    width: "100%",
-    marginBottom: 20,
-    paddingHorizontal: 10,
-    borderRadius: 8,
-  },
-  btnContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    width: "100%",
-  },
-  btnAdd: {
-    backgroundColor: "blue",
-    padding: 15,
-    borderRadius: 8,
-    alignItems: "center",
-  },
-  btnText: {
-    color: "white",
-    fontWeight: "bold",
-  },
-  btnCancel: {
-    color: "red",
-    marginTop: 10,
-    fontSize: 16,
-  },
-});
+function createStyles(theme, colorScheme) {
+  return StyleSheet.create({
+    modalContainer: {
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+      backgroundColor: "rgba(0,0,0,0.5)",
+    },
+    popUpView: {
+      width: 300,
+      backgroundColor: theme.appBg,
+      borderRadius: 10,
+      padding: 20,
+      alignItems: "center",
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.25,
+      shadowRadius: 4,
+      elevation: 5,
+    },
+    title: {
+      color: theme.glow,
+      fontSize: 20,
+      fontWeight: "bold",
+      marginBottom: 15,
+    },
+    input: {
+      height: 40,
+      borderColor: colorScheme === "dark" ? "gray" : "black",
+      borderWidth: 1,
+      width: "100%",
+      marginBottom: 20,
+      paddingHorizontal: 10,
+      borderRadius: 8,
+      color: theme.text,
+    },
+    btnContainer: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      width: "100%",
+    },
+    btnAdd: {
+      backgroundColor: colorScheme === "dark" ? "#373d48" : theme.text,
+      padding: 15,
+      alignItems: "center",
+      width: 70,
+    },
+    btnCancel: {
+      width: 70,
+    },
+    txtAdd: {
+      color: "white",
+      fontWeight: "bold",
+    },
+    txtCancel: {
+      textAlign: "center",
+      color: "red",
+      fontSize: 16,
+    },
+  });
+}

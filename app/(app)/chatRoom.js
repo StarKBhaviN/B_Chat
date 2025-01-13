@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   Keyboard,
 } from "react-native";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import ChatRoomHeader from "../../components/ChatRoomHeader";
 import MessageList from "../../components/MessageList";
@@ -35,13 +35,17 @@ import {
   writeBatch,
 } from "firebase/firestore";
 import { db } from "../../firebaseConfig";
+import { ThemeContext } from "../../context/ThemeContext";
 
 export default function ChatRoom() {
+  const { theme, colorScheme } = useContext(ThemeContext);
+
   const item = useLocalSearchParams();
   const { user } = useAuth();
   const router = useRouter();
   const [messages, setMessages] = useState([]);
   const [isTyping, setIsTyping] = useState(false);
+  const [inChat, setInChat] = useState(false);
   const textRef = useRef("");
   const inputRef = useRef(null);
   const scrollViewRef = useRef(null);
@@ -177,7 +181,7 @@ export default function ChatRoom() {
         profileURL: user?.profileURL,
         senderName: user?.profileName,
         createdAt: serverTimestamp(),
-        localSendTime : new Date(),
+        localSendTime: new Date(),
         isReaded: false,
       };
 
@@ -281,12 +285,22 @@ export default function ChatRoom() {
   }, [item?.userId]);
 
   return (
-    <CustomKeyboardView inChat={true}>
-      <View className="flex-1 bg-white">
-        <StatusBar styles="dark" />
+    <CustomKeyboardView inChat={inChat} setInChat={setInChat}>
+      <View className="flex-1" style={{ backgroundColor: theme.background }}>
+        <StatusBar style={colorScheme === "dark" ? "light" : "dark"} />
         <ChatRoomHeader user={item} router={router} />
-        <View className="h-2 border-b border-neutral-300" />
-        <View className="flex-1 justify-content bg-neutral-100 overflow-visible">
+        <View
+          className="h-1 border-b"
+          style={{
+            borderColor: colorScheme === "dark" ? "#3A3B3A" : "#A8A9A8",
+          }}
+        />
+        <View
+          className="flex-1 justify-content overflow-visible"
+          style={{
+            backgroundColor: colorScheme === "dark" ? "#1B1A22" : "#F5F5F5",
+          }}
+        >
           <MessageList
             scrollViewRef={scrollViewRef}
             messages={messages}
@@ -295,7 +309,13 @@ export default function ChatRoom() {
           />
 
           <View style={{ marginBottom: hp(2.5) }} className="pt-2">
-            <View className="flex-row mx-3 justify-between items-center p-1 bg-white border border-neutral-300 rounded-full pl-3">
+            <View
+              className="flex-row mx-3 justify-between items-center p-1 border border-neutral-300 rounded-full pl-3"
+              style={{
+                backgroundColor: colorScheme === "dark" ? theme.tint : "white",
+                borderColor: colorScheme === "dark" ? "#2D2D2C" : theme.border,
+              }}
+            >
               <TextInput
                 ref={inputRef}
                 onChangeText={(value) => {
@@ -303,8 +323,10 @@ export default function ChatRoom() {
                   updateTypingStatus(value.length > 0);
                 }}
                 placeholder="Type Message..."
+                placeholderTextColor={theme.placeholder}
                 style={{
                   fontSize: hp(1.9),
+                  color: theme.glow,
                   // textOverflow: "wrap",
                   // minHeight: hp(3), // Minimum height for the input field
                   maxHeight: hp(6), // Maximum height to allow only 2-3 lines
@@ -320,13 +342,18 @@ export default function ChatRoom() {
               />
               <TouchableOpacity
                 onPress={handleSendMessage}
-                className="bg-neutral-200 p-2 mr-[1px] rounded-full items-center justify-center"
-                style={{ height: hp(5), width: hp(5) }}
+                className="p-2 mr-[1px] rounded-full items-center justify-center"
+                style={{
+                  height: hp(6),
+                  width: hp(6),
+                  backgroundColor:
+                    colorScheme === "dark" ? "#1B1A22" : "#E8E9EA",
+                }}
               >
                 <MaterialCommunityIcons
                   name="send"
                   size={hp(2.7)}
-                  color={"#737373"}
+                  color={theme.icon}
                 />
               </TouchableOpacity>
             </View>

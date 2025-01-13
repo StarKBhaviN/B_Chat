@@ -7,8 +7,9 @@ import {
   Pressable,
   Alert,
   StyleSheet,
+  ScrollView,
 } from "react-native";
-import React, { useRef, useState } from "react";
+import React, { useContext, useRef, useState } from "react";
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
@@ -25,19 +26,23 @@ import { getAuth, sendPasswordResetEmail } from "firebase/auth";
 import ForgotPassword from "../components/ForgotPassword";
 import PhoneSignIn from "../components/PhoneSignIn.js";
 import CustomKeyboardView from "../components/CustomKeyboardView.js";
+import { ThemeContext } from "../context/ThemeContext.js";
 
 export default function SignIn() {
+  // Import theme context for using theme
+  const { colorScheme, setColorScheme, theme } = useContext(ThemeContext);
+  const styles = createStyles(theme, colorScheme);
+
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
-
   const { login } = useAuth();
-
-  const emailRef = useRef();
-  const passRef = useRef();
 
   const [modalVisible, setModalVisible] = useState(false);
   const [phonemodalVisible, setPhoneModalVisible] = useState(false);
   const [showPass, setShowPass] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const emailRef = useRef();
+  const passRef = useRef();
 
   const [fontLoaded] = useFonts({
     PlayfairDisplay_500Medium,
@@ -71,13 +76,13 @@ export default function SignIn() {
   //   }
   // }
   return (
-    <SafeAreaView className="flex-1 bg-neutral-100">
-      <StatusBar style="dark" />
-      <CustomKeyboardView>
-        <View
-          style={{ paddingHorizontal: wp(6) }}
-          className="flex-1 gap-6 "
-        >
+    <SafeAreaView className="flex-1" style={styles.safeContent}>
+      <StatusBar style={colorScheme === "dark" ? "light" : "dark"} />
+      <ScrollView contentContainerStyle={{ flexGrow: 1 }}
+    keyboardShouldPersistTaps="handled"
+    bounces={false}
+    showsVerticalScrollIndicator={false} >
+        <View style={{ paddingHorizontal: wp(6) }} className="flex-1 gap-6 ">
           <View className="items-center">
             <Image
               style={{ height: hp(30) }}
@@ -87,64 +92,66 @@ export default function SignIn() {
 
           <View className="gap-4">
             <Text
-              style={[styles.myFont, { fontSize: hp(4) }]}
-              className="font-bol tracking-wider text-center text-neutral-800"
+              style={[styles.myFont, { fontSize: hp(4), color: theme.glow }]}
+              className="font-bold tracking-wider text-center"
             >
               Sign In
             </Text>
 
             {/* Inputs */}
             <View className="gap-3">
+              {/* Mail */}
               <View
-                style={{ height: hp(7) }}
-                className="flex-row px-4 gap-3 bg-neutral-200 items-center rounded-2xl"
+                style={{ height: hp(7), backgroundColor: theme.tint }}
+                className="flex-row px-4 gap-3 items-center rounded-2xl"
               >
                 <Octicons
                   name="mail"
                   size={hp(2.7)}
-                  color="gray"
+                  color={theme.icon}
                   style={{ width: wp(6.6), textAlign: "center" }}
                 />
                 <TextInput
                   onChangeText={(value) => (emailRef.current = value)}
-                  style={{ fontSize: hp(2) }}
-                  className="flex-1 font-semibold text-neutral-700"
+                  style={{ fontSize: hp(2), color: theme.text }}
+                  className="flex-1 font-semibold"
                   placeholder="Email Address"
-                  placeholderTextColor={"gray"}
+                  placeholderTextColor={theme.placeholder}
                 />
               </View>
 
+              {/* Password */}
               <View className="gap-3">
                 <View
-                  style={{ height: hp(7) }}
-                  className="flex-row px-4 gap-3 bg-neutral-200 items-center rounded-2xl"
+                  style={{ height: hp(7), backgroundColor: theme.tint }}
+                  className="flex-row px-4 gap-3 items-center rounded-2xl"
                 >
                   <Octicons
                     name="lock"
                     size={hp(2.7)}
-                    color="gray"
+                    color={theme.icon}
                     style={{ width: wp(6.6), textAlign: "center" }}
                   />
                   <TextInput
                     onChangeText={(value) => (passRef.current = value)}
-                    style={{ fontSize: hp(2) }}
-                    className="flex-1 font-semibold text-neutral-700"
+                    style={{ fontSize: hp(2), color: theme.text }}
+                    className="flex-1 font-semibold"
                     placeholder="Password"
                     secureTextEntry={!showPass}
-                    placeholderTextColor={"gray"}
+                    placeholderTextColor={theme.placeholder}
                   />
                   <TouchableOpacity onPress={() => setShowPass(!showPass)}>
                     <Entypo
                       name={showPass ? "eye" : "eye-with-line"}
                       size={hp(2.7)}
-                      color={"gray"}
+                      color={theme.icon}
                     />
                   </TouchableOpacity>
                 </View>
                 <TouchableOpacity onPress={() => setModalVisible(true)}>
                   <Text
-                    style={{ fontSize: hp(1.8) }}
-                    className="font-semibold text-right text-neutral-600"
+                    style={{ fontSize: hp(1.8), color: theme.text }}
+                    className="font-semibold text-right"
                   >
                     Forgot Password?
                   </Text>
@@ -157,12 +164,12 @@ export default function SignIn() {
                   ) : (
                     <TouchableOpacity
                       onPress={handleLogin}
-                      style={{ height: hp(6) }}
-                      className="bg-indigo-600 rounded-xl justify-center items-center"
+                      style={{ height: hp(6), backgroundColor: theme.specialBg }}
+                      className="rounded-xl justify-center items-center"
                     >
                       <Text
-                        style={{ fontSize: hp(2.7) }}
-                        className="text-white font-bold tracking-wider"
+                        style={{ fontSize: hp(2.7), color: theme.glow }}
+                        className="font-bold tracking-wider"
                       >
                         Sign In
                       </Text>
@@ -170,6 +177,7 @@ export default function SignIn() {
                   )}
                 </View>
               </View>
+
               <View>
                 <ForgotPassword
                   setModalVisible={setModalVisible}
@@ -178,18 +186,17 @@ export default function SignIn() {
               </View>
 
               {/* SignUp Text */}
-
               <View className="flex-row justify-center">
                 <Text
-                  style={{ fontSize: hp(1.8) }}
-                  className="font-semibold text-neutral-500"
+                  style={{ fontSize: hp(1.8), color: theme.placeholder }}
+                  className="font-semibold"
                 >
                   Don't Have an Account?{" "}
                 </Text>
                 <Pressable onPress={() => router.push("signUp")}>
                   <Text
-                    style={{ fontSize: hp(1.8) }}
-                    className="font-semibold text-indigo-600"
+                    style={{ fontSize: hp(1.8), color : theme.glow }}
+                    className="font-semibold"
                   >
                     Sign Up
                   </Text>
@@ -198,33 +205,33 @@ export default function SignIn() {
 
               <View className="gap-1 flex-column items-center">
                 <Text
-                  style={{ fontSize: hp(1.8) }}
-                  className="mb-2 font-semibold text-ingigo-700"
+                  style={{ fontSize: hp(1.8), color: theme.text }}
+                  className="mb-2 font-semibold"
                 >
                   OR{" "}
                 </Text>
                 <Pressable
                   className="p-4 rounded-2xl px-6 flex-row items-center"
-                  style={styles.googleButton}
+                  style={[styles.googleButton, { backgroundColor: theme.tint }]}
                   onPress={() => Alert.alert("SignIn", "Coming Soon!!!")}
                 >
                   <AntDesign name="google" size={22} color={"orange"} />
                   <Text
-                    style={{ fontSize: hp(1.7) }}
-                    className="font-semibold text-indigo-600 mx-2"
+                    style={{ fontSize: hp(1.7), color : theme.text }}
+                    className="font-semibold mx-2"
                   >
                     Sign-In with Google
                   </Text>
                 </Pressable>
                 <Pressable
                   className="mt-2 p-4 rounded-2xl px-6 flex-row items-center"
-                  style={styles.googleButton}
+                  style={[styles.googleButton, { backgroundColor: theme.tint }]}
                   onPress={() => setPhoneModalVisible(true)}
                 >
                   <AntDesign name="phone" size={22} color={"green"} />
                   <Text
-                    style={{ fontSize: hp(1.7) }}
-                    className="font-semibold text-indigo-600 mx-2"
+                    style={{ fontSize: hp(1.7), color : theme.text }}
+                    className="font-semibold mx-2"
                   >
                     Sign-In with Phone
                   </Text>
@@ -239,18 +246,23 @@ export default function SignIn() {
             </View>
           </View>
         </View>
-      </CustomKeyboardView>
+      </ScrollView>
     </SafeAreaView>
   );
 }
 
-const styles = StyleSheet.create({
-  myFont: {
-    fontFamily: "PlayfairDisplay_500Medium",
-  },
-  googleButton: {
-    // height : hp(4),
-    backgroundColor: "white",
-    boxShadow: "1px 1px 4px black",
-  },
-});
+function createStyles(theme, colorScheme) {
+  return StyleSheet.create({
+    safeContent: {
+      backgroundColor: theme.background,
+    },
+    myFont: {
+      fontFamily: "PlayfairDisplay_500Medium",
+    },
+    googleButton: {
+      // height : hp(4),
+      backgroundColor: "white",
+      boxShadow: "1px 1px 4px black",
+    },
+  });
+}

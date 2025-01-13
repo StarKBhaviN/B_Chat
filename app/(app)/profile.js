@@ -1,5 +1,5 @@
 import { View, Text, TouchableOpacity } from "react-native";
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Image } from "expo-image";
 import {
   widthPercentageToDP as wp,
@@ -10,8 +10,12 @@ import { useAuth } from "../../context/authContext";
 import { doc, getDoc } from "firebase/firestore";
 import { usersRef } from "../../firebaseConfig";
 import { router } from "expo-router";
+import { ThemeContext } from "../../context/ThemeContext";
 
 export default function Profile() {
+  const {theme, colorScheme} = useContext(ThemeContext)
+  const styles = createStyles(theme, colorScheme);
+
   const { user } = useAuth(); // Using user data from AuthContext
   const [userData, setUserData] = useState(user); // Store user data separately
 
@@ -56,7 +60,7 @@ export default function Profile() {
 
         {/* Bio */}
         <View className="flex mb-2" style={{width : wp(70)}}>
-          <Text style={{fontSize : 18, marginBottom : 2}}>Bio </Text>
+          <Text style={{fontSize : 18, marginBottom : 2, color : theme.glow}}>Bio </Text>
           <View style={styles.bioView}>
             <Text style={styles.bioText}>
               {userData?.bio || "You have not added bio."}
@@ -71,90 +75,74 @@ export default function Profile() {
             {userData?.friends?.length > 0 ? userData.friends.length : 0}
           </Text>
         </View>
-
-        {/* Back Button */}
-        <TouchableOpacity
-          onPress={() => router.back()}
-          style={styles.backButton}
-        >
-          <Text style={styles.backText}>Back to Home</Text>
-        </TouchableOpacity>
       </View>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#f5f5f5",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  profileCard: {
-    width: wp(85),
-    padding: 20,
-    backgroundColor: "#fff",
-    borderRadius: 15,
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 5,
-  },
-  profileImageContainer: {
-    marginBottom: 15,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  profileImage: {
-    height: hp(15),
-    width: hp(15),
-    borderRadius: 100,
-    resizeMode: "cover",
-  },
-  profileName: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#333",
-    marginBottom: 5,
-  },
-  email: {
-    fontSize: 16,
-    color: "#666",
-    marginBottom: 10,
-  },
-  bioView : {
-    borderWidth : 2,
-    padding : 6,
-    borderRadius : 10,
-    backgroundColor : "rgb(0, 0, 0)",
 
-  },
-  bioText: {
-    fontSize: 16,
-    color: "#fff",
-    marginBottom: 5,
-  },
-  friendsContainer: {
-    marginBottom: 20,
-  },
-  friendsText: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#007BFF",
-  },
-  backButton: {
-    backgroundColor: "#007BFF",
-    paddingVertical: 12,
-    paddingHorizontal: 25,
-    borderRadius: 25,
-    marginTop: 10,
-  },
-  backText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-});
+
+function createStyles(theme, colorScheme) {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: theme.appBg,
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    profileCard: {
+      width: wp(85),
+      padding: 20,
+      backgroundColor: colorScheme==="dark" ? theme.tint : "white",
+      borderRadius: 15,
+      alignItems: "center",
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.2,
+      shadowRadius: 4,
+      elevation: 5,
+    },
+    profileImageContainer: {
+      marginBottom: 15,
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    profileImage: {
+      height: hp(15),
+      width: hp(15),
+      borderRadius: 100,
+      resizeMode: "cover",
+    },
+    profileName: {
+      fontSize: 24,
+      fontWeight: "bold",
+      color: theme.glow,
+      marginBottom: 5,
+    },
+    email: {
+      fontSize: 16,
+      color: theme.text,
+      marginBottom: 10,
+    },
+    bioView : {
+      borderWidth : 1,
+      padding : 6,
+      borderRadius : 10,
+      backgroundColor : colorScheme==="dark" ? "#092635" : "#FAF0E6",
+  
+    },
+    bioText: {
+      fontSize: 16,
+      color: theme.glow,
+      marginBottom: 5,
+    },
+    friendsContainer: {
+      marginBottom: 20,
+    },
+    friendsText: {
+      fontSize: 18,
+      fontWeight: "bold",
+      color: theme.text,
+    },
+  });
+}

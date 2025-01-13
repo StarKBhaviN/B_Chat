@@ -1,5 +1,5 @@
 import { View, Text, Platform, StyleSheet } from "react-native";
-import React from "react";
+import React, { useContext } from "react";
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
@@ -17,6 +17,8 @@ import {
 import { MenuItems } from "./CustomMenuItems";
 import { AntDesign, Feather, Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
+import { ThemeContext } from "../context/ThemeContext";
+import { StatusBar } from "expo-status-bar";
 
 const ios = Platform.OS == "ios";
 
@@ -25,6 +27,9 @@ export default function HomeHeader({
   showProfile = true,
   showBack = false,
 }) {
+  const { colorScheme, theme } = useContext(ThemeContext);
+  const styles = createStyles(theme, colorScheme);
+
   const { user, logout } = useAuth();
   const { top } = useSafeAreaInsets();
 
@@ -35,93 +40,134 @@ export default function HomeHeader({
   const handleSettings = () => {
     router.push("settings");
   };
+
   const handleLogout = async () => {
     await logout();
   };
+
   return (
-    <View style={[styles.header, { paddingTop: ios ? top : top + 10 }]}>
-      <View>
-        <Text style={[styles.text, { fontSize: hp(3) }]}>{title}</Text>
-      </View>
-
-      {showProfile && (
+    <View style={[styles.headerLayout, { paddingTop: ios ? top : top }]}>
+      <View style={[styles.header]}>
+        <StatusBar style={colorScheme === "dark" ? "light" : "dark"} />
         <View>
-          <Menu>
-            <MenuTrigger>
-              <Image
-                style={{
-                  height: hp(4.5),
-                  aspectRatio: 1,
-                  borderRadius: 100,
-                }}
-                source={user?.profileURL}
-                placeholder={blurhash}
-                transition={500}
-              />
-            </MenuTrigger>
-            <MenuOptions
-              customStyles={{
-                optionsContainer: {
-                  borderRadius: 10,
-                  marginTop: 38,
-                  marginLeft: -30,
-                  backgroundColor: "white",
-                  width: 160,
-                  shadowOpacity: 0.2,
-                  shadowOffset: { width: 0, height: 0 },
-                },
-              }}
-            >
-              <MenuItems
-                text="Profile"
-                action={handleProfile}
-                icon={<Feather name="user" size={hp(2.5)} />}
-              />
-              <Divider />
-              <MenuItems
-                text="Settings"
-                action={handleSettings}
-                icon={<Feather name="settings" size={hp(2.5)} />}
-              />
-              <Divider />
-              <MenuItems
-                text="Sign Out"
-                action={handleLogout}
-                icon={<AntDesign name="logout" size={hp(2.5)} />}
-              />
-            </MenuOptions>
-          </Menu>
+          <Text style={[styles.text, { fontSize: hp(3) }]}>{title}</Text>
         </View>
-      )}
 
-      {showBack && (
-        <Ionicons name="arrow-back" size={24} style={{padding : 4}} color={"white"} onPress={() => router.back()}/>
-      )}
+        {showProfile && (
+          <View style={{ padding: 0 }}>
+            <Menu>
+              <MenuTrigger>
+                <Image
+                  style={{
+                    height: hp(5),
+                    aspectRatio: 1,
+                    borderRadius: 100,
+                  }}
+                  source={user?.profileURL}
+                  placeholder={blurhash}
+                  transition={500}
+                />
+              </MenuTrigger>
+              <MenuOptions
+                customStyles={{
+                  optionsContainer: {
+                    borderRadius: 10,
+                    marginTop: 38,
+                    marginLeft: -30,
+                    backgroundColor:
+                      colorScheme === "dark" ? "#222831" : "white",
+                    width: 160,
+                    shadowOpacity: 0.2,
+                    shadowOffset: { width: 0, height: 0 },
+                  },
+                }}
+              >
+                <MenuItems
+                  text="Profile"
+                  action={handleProfile}
+                  icon={
+                    <Feather name="user" size={hp(2.5)} color={theme.icon} />
+                  }
+                />
+                <Divider />
+                <MenuItems
+                  text="Settings"
+                  action={handleSettings}
+                  icon={
+                    <Feather
+                      name="settings"
+                      size={hp(2.5)}
+                      color={theme.icon}
+                    />
+                  }
+                />
+                <Divider />
+                <MenuItems
+                  text="Sign Out"
+                  action={handleLogout}
+                  icon={
+                    <AntDesign
+                      name="logout"
+                      size={hp(2.5)}
+                      color={theme.icon}
+                    />
+                  }
+                />
+              </MenuOptions>
+            </Menu>
+          </View>
+        )}
+
+        {showBack && (
+          <Ionicons
+            name="arrow-back"
+            size={24}
+            style={{ padding: 4 }}
+            color={"white"}
+            onPress={() => router.back()}
+          />
+        )}
+      </View>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems : "center",
-    paddingHorizontal: 20,
-    backgroundColor: "#6366f1", // indigo-400
-    paddingBottom: 16,
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: 4 },
-    shadowRadius: 6,
-  },
-  text: {
-    color: "white",
-    fontSize: 20,
-  },
-});
+function createStyles(theme, colorScheme) {
+  return StyleSheet.create({
+    headerLayout: {
+      backgroundColor: theme.appBg, // indigo-400
+    },
+    header: {
+      display: "flex",
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      paddingHorizontal: 20,
+      backgroundColor: "#2f3a4b", // indigo-400
+      paddingBottom: 4,
+      borderBottomLeftRadius: 24,
+      borderBottomRightRadius: 24,
+      shadowColor: "#000",
+      shadowOpacity: 0.1,
+      shadowOffset: { width: 0, height: 4 },
+      shadowRadius: 6,
+      minHeight: 55,
+    },
+    text: {
+      color: "white",
+      fontSize: 20,
+    },
+  });
+}
 
 const Divider = () => {
-  return <View className="p-[1px] w-full bg-neutral-200" />;
+  const { colorScheme } = useContext(ThemeContext);
+  return (
+    <View
+      className="p-[.5px] w-full"
+      style={{
+        backgroundColor: colorScheme === "dark" ? "#3C3C3C" : "#423b3b",
+      }}
+    />
+  );
 };

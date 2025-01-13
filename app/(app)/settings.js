@@ -17,13 +17,13 @@ const styles = StyleSheet.create({
 });
 
 // Settings
-//     - How much B_Chat used today
-//     - Profile edits : Name, Profile pic
-//     - Privacy : Who can see your active status, Online, About
-//     - Email change and verification
-//     - Manage Friends
-//     - Make me offline/sleep
-//     - Theme : Dark, Light, System Default
+//     - How much B_Chat used today (Nothing)
+//     - Profile edits : Name, Profile pic (Modal)
+//     - Privacy : Who can see your active status, Last online, About (Pop up)
+//     - Email change and verification (Modal)
+//     - Manage Friends (Page)
+//     - Make me offline/sleep (Button)
+//     - Theme : Dark, Light, System Default (Switch)
 //     - Font Size progress bar
-//     - Notification settings : Coming soon status
-//     - Help section
+//     - Notification settings : Coming soon status (Modal)
+//     - Help section (Page)

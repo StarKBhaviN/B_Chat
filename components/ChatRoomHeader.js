@@ -1,5 +1,5 @@
 import { View, Text, TouchableOpacity, Animated } from "react-native";
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useContext } from "react";
 import { Stack } from "expo-router";
 import { Entypo, Ionicons } from "@expo/vector-icons";
 import {
@@ -10,8 +10,11 @@ import { Image } from "expo-image";
 import { formatMessageTime } from "../utils/common";
 import { doc, onSnapshot } from "firebase/firestore";
 import { db } from "../firebaseConfig";
+import { ThemeContext } from "../context/ThemeContext";
 
 export default function ChatRoomHeader({ user, router }) {
+  const { theme, colorScheme } = useContext(ThemeContext);
+
   const [lastSeen, setLastSeen] = useState(null);
   const [status, setStatus] = useState(null);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -52,7 +55,7 @@ export default function ChatRoomHeader({ user, router }) {
 
   const expandedHeight = animation.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, hp(26)],  // Adjust height as needed
+    outputRange: [0, hp(26)], // Adjust height as needed
   });
 
   return (
@@ -61,13 +64,16 @@ export default function ChatRoomHeader({ user, router }) {
         options={{
           title: "",
           headerShadowVisible: false,
+          headerStyle : {
+            backgroundColor : colorScheme === "dark" ? theme.background : ""
+          },
           headerLeft: () => (
             <View className="flex-row items-center gap-2">
               <TouchableOpacity
                 onPress={() => router.back()}
                 style={{ padding: 1 }}
               >
-                <Entypo name="chevron-left" size={hp(3.3)} color="#737373" />
+                <Entypo name="chevron-left" size={hp(3.3)} color={colorScheme==="dark" ? theme.icon : ""} />
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -90,12 +96,13 @@ export default function ChatRoomHeader({ user, router }) {
                     style={{
                       fontSize: hp(2.5),
                       marginBottom: -1,
+                      color : colorScheme==="dark" ? theme.glow : "#404040"
                     }}
-                    className="text-neutral-700 font-medium"
+                    className="font-medium"
                   >
                     {user?.profileName}
                   </Text>
-                  <Text style={{ fontSize: hp(1.6) }}>
+                  <Text style={{ fontSize: hp(1.6), color : colorScheme==="dark" ? theme.text : "" }}>
                     {status === "online"
                       ? "Active Now"
                       : status === "offline"
@@ -108,8 +115,8 @@ export default function ChatRoomHeader({ user, router }) {
           ),
           headerRight: () => (
             <View className="flex-row items-center gap-8">
-              <Ionicons name="call" size={hp(2.8)} color={"#737373"} />
-              <Ionicons name="videocam" size={hp(2.8)} color={"#737373"} />
+              <Ionicons name="call" size={hp(2.8)} color={theme.icon} />
+              <Ionicons name="videocam" size={hp(2.8)} color={theme.icon} />
             </View>
           ),
         }}
@@ -120,13 +127,19 @@ export default function ChatRoomHeader({ user, router }) {
         style={{
           height: expandedHeight,
           overflow: "hidden",
-          backgroundColor: "#f0f0f0",
+          backgroundColor: colorScheme === "dark" ? theme.background : "#f0f0f0",
           padding: isExpanded ? hp(1) : 0,
           alignItems: "center",
         }}
       >
         {isExpanded && (
-          <View style={{ alignItems: "center",borderWidth : 1, width : wp(80), paddingHorizontal : 10 }}>
+          <View
+            style={{
+              alignItems: "center",
+              width: wp(80),
+              paddingHorizontal: 10,
+            }}
+          >
             <Image
               source={user?.profileURL}
               style={{
@@ -140,6 +153,7 @@ export default function ChatRoomHeader({ user, router }) {
               style={{
                 fontSize: hp(3),
                 fontWeight: "600",
+                color : theme.glow
               }}
             >
               {user?.profileName}
@@ -147,13 +161,13 @@ export default function ChatRoomHeader({ user, router }) {
             <Text
               style={{
                 fontSize: hp(2),
-                color: "#737373",
-                marginTop: hp(.5),
+                color: theme.text,
+                marginTop: hp(0.5),
               }}
             >
               {user?.bio || "This user hasn't added a bio yet."}
             </Text>
-            <Text style={{ fontSize: hp(1.8), marginTop: 10 }}>
+            <Text style={{ fontSize: hp(1.8), marginTop: 10, color : theme.text }}>
               Joined: {user?.joinedDate || "N/A"}
             </Text>
           </View>

@@ -8,16 +8,20 @@ import {
   TouchableOpacity,
   Alert,
 } from "react-native";
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import {
   sendPasswordResetEmail,
   fetchSignInMethodsForEmail,
 } from "firebase/auth";
 import { auth } from "../firebaseConfig";
+import { ThemeContext } from "../context/ThemeContext";
 
 export default function ForgotPassword({ setModalVisible, modalVisible }) {
   const [email, setEmail] = useState("");
 
+  const { theme, colorScheme } = useContext(ThemeContext);
+  const styles = createStyles(theme, colorScheme);
+  
   const handlePasswordReset = async () => {
     const trimmedEmail = email.trim();
     console.log(trimmedEmail);
@@ -29,7 +33,10 @@ export default function ForgotPassword({ setModalVisible, modalVisible }) {
 
     try {
       // Fetch the sign-in methods for the given email
-      const signInMethods = await fetchSignInMethodsForEmail(auth, trimmedEmail);
+      const signInMethods = await fetchSignInMethodsForEmail(
+        auth,
+        trimmedEmail
+      );
       // const isEmail = await auth.getUserByEmail(trimmedEmail)
 
       console.log(signInMethods);
@@ -95,47 +102,49 @@ export default function ForgotPassword({ setModalVisible, modalVisible }) {
   );
 }
 
-const styles = StyleSheet.create({
-  modalContainer: {
-    flex: 1,
-    justifyContent: "center", // Center the modal vertically
-    alignItems: "center", // Center horizontally
-    backgroundColor: "rgba(0, 0, 0, 0.5)", // Semi-transparent background
-  },
-  popupView: {
-    width: 300,
-    backgroundColor: "#fff",
-    borderRadius: 10,
-    padding: 20,
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5, // Shadow for Android
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: "bold",
-    marginBottom: 15,
-  },
-  input: {
-    height: 40,
-    borderColor: "gray",
-    borderWidth: 1,
-    width: "100%",
-    marginBottom: 20,
-    paddingHorizontal: 10,
-    borderRadius: 8,
-  },
-  buttonContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    width: "100%",
-  },
-  cancel: {
-    color: "red",
-    marginTop: 10,
-    fontSize: 16,
-  },
-});
+function createStyles(theme, colorScheme) {
+  return StyleSheet.create({
+    modalContainer: {
+      flex: 1,
+      justifyContent: "center", // Center the modal vertically
+      alignItems: "center", // Center horizontally
+      backgroundColor: "rgba(0, 0, 0, 0.5)", // Semi-transparent background
+    },
+    popupView: {
+      width: 300,
+      backgroundColor: theme.appBg,
+      borderRadius: 10,
+      padding: 20,
+      alignItems: "center",
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.25,
+      shadowRadius: 4,
+      elevation: 5, // Shadow for Android
+    },
+    title: {
+      fontSize: 20,
+      fontWeight: "bold",
+      marginBottom: 15,
+    },
+    input: {
+      height: 40,
+      borderColor: "gray",
+      borderWidth: 1,
+      width: "100%",
+      marginBottom: 20,
+      paddingHorizontal: 10,
+      borderRadius: 8,
+    },
+    buttonContainer: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      width: "100%",
+    },
+    cancel: {
+      color: "red",
+      marginTop: 10,
+      fontSize: 16,
+    },
+  });
+}
