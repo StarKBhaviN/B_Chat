@@ -9,6 +9,16 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { doc, serverTimestamp, updateDoc } from "firebase/firestore";
 import { usersRef } from "../firebaseConfig";
 import ThemeProvider from "../context/ThemeContext";
+import { NotificationProvider } from "../context/NotificationContext";
+import * as Notifications from "expo-notifications";
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true, //Shows even if u r in app
+    shouldPlaySound: true,
+    shouldSetBadge: true,
+  }),
+});
 
 const MainLayout = () => {
   const { isAuthenticated } = useAuth();
@@ -75,14 +85,16 @@ const MainLayout = () => {
 
 export default function RootLayout() {
   return (
-    <ThemeProvider>
-      <SafeAreaProvider>
-        <MenuProvider>
-          <AuthContextProvide>
-            <MainLayout />
-          </AuthContextProvide>
-        </MenuProvider>
-      </SafeAreaProvider>
-    </ThemeProvider>
+    <NotificationProvider>
+      <ThemeProvider>
+        <SafeAreaProvider>
+          <MenuProvider>
+            <AuthContextProvide>
+              <MainLayout />
+            </AuthContextProvide>
+          </MenuProvider>
+        </SafeAreaProvider>
+      </ThemeProvider>
+    </NotificationProvider>
   );
 }
