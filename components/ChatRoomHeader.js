@@ -105,7 +105,7 @@ export default function ChatRoomHeader({ user, router }) {
                   <Text style={{ fontSize: hp(1.6), color : colorScheme==="dark" ? theme.text : "" }}>
                     {status === "online"
                       ? "Active Now"
-                      : status === "offline"
+                      : status === "offline" && formatMessageTime(lastSeen) === "Just now"
                       ? "Just Now"
                       : `Active ${renderTime()}`}
                   </Text>

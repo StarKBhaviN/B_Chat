@@ -75,6 +75,7 @@ export default function ForgotPassword({ setModalVisible, modalVisible }) {
             value={email}
             onChangeText={(text) => setEmail(text)}
             placeholder="Enter your email"
+            placeholderTextColor={theme.placeholder}
             style={styles.input}
           />
 
@@ -123,6 +124,7 @@ function createStyles(theme, colorScheme) {
       elevation: 5, // Shadow for Android
     },
     title: {
+      color : theme.glow,
       fontSize: 20,
       fontWeight: "bold",
       marginBottom: 15,
@@ -134,6 +136,7 @@ function createStyles(theme, colorScheme) {
       width: "100%",
       marginBottom: 20,
       paddingHorizontal: 10,
+      color : theme.text,
       borderRadius: 8,
     },
     buttonContainer: {

@@ -36,6 +36,7 @@ import {
 } from "firebase/firestore";
 import { db } from "../../firebaseConfig";
 import { ThemeContext } from "../../context/ThemeContext";
+import { sendPushNotification } from "../../utils/pushNotification";
 
 export default function ChatRoom() {
   const { theme, colorScheme } = useContext(ThemeContext);
@@ -191,12 +192,29 @@ export default function ChatRoom() {
       const recipientRef = doc(db, "users", item?.userId);
       const recipientSnap = await getDoc(recipientRef);
 
-      if (
-        recipientSnap.exists() &&
-        recipientSnap.data().activeRoom === roomId
-      ) {
-        await updateDoc(newMessageRef, { isReaded: true });
+      if (recipientSnap.exists()) {
+        const recipientData = recipientSnap.data();
+  
+        if (recipientData.activeRoom === roomId) {
+          // Mark the message as read if recipient is in the same room
+          await updateDoc(newMessageRef, { isReaded: true });
+        } else if (recipientData.pushToken) {
+          // Send a push notification if recipient is not in the same room
+          await sendPushNotification(
+            recipientData.pushToken,
+            "New Message",
+            `${user?.profileName}: ${message}`, // Notification title and body
+            { roomId } // Optional payload data
+          );
+        }
       }
+  
+      // if (
+      //   recipientSnap.exists() &&
+      //   recipientSnap.data().activeRoom === roomId
+      // ) {
+      //   await updateDoc(newMessageRef, { isReaded: true });
+      // }
     } catch (error) {
       console.error("Error sending message:", error);
     }

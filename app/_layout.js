@@ -7,10 +7,11 @@ import { AuthContextProvide, useAuth } from "../context/authContext";
 import { MenuProvider } from "react-native-popup-menu";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { doc, serverTimestamp, updateDoc } from "firebase/firestore";
-import { usersRef } from "../firebaseConfig";
+import { auth, db, usersRef } from "../firebaseConfig";
 import ThemeProvider from "../context/ThemeContext";
 import { NotificationProvider } from "../context/NotificationContext";
 import * as Notifications from "expo-notifications";
+
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -26,6 +27,18 @@ const MainLayout = () => {
 
   const appState = useRef(AppState.currentState);
   const { user } = useAuth();
+
+  useEffect(() => {
+    const subscription = Notifications.addPushTokenListener(async (token) => {
+      if (auth.currentUser?.uid) {
+        const docRef = doc(db, "users", auth.currentUser.uid);
+        await updateDoc(docRef, { pushToken: token });
+        console.log("In _layout done adding token");
+      }
+    });
+
+    return () => subscription.remove();
+  }, []);
 
   // App state change online/offline
   useEffect(() => {
