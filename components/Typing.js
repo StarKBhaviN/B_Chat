@@ -1,15 +1,22 @@
 import { View } from "react-native";
-import React from "react";
+import React, { useContext } from "react";
 import LottieView from "lottie-react-native";
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
+import { ThemeContext } from "../context/ThemeContext";
 
 export default function Typing() {
+  const {theme,colorScheme} = useContext(ThemeContext)
   return (
     <View style={{ width: wp(10) }} className="ml-3 mb-3">
-      <View className="rounded-2xl px-7 bg-indigo-100 border border-indigo-200">
+      <View
+        className="rounded-2xl px-7 border border-neutral-500"
+        style={{
+          backgroundColor: colorScheme === "dark" ? "#092635" : "#ebf4ff",
+        }}
+      >
         <LottieView
           style={{
             minWidth: hp(40),

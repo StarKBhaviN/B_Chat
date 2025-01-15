@@ -107,8 +107,6 @@ export default function ChatRoom() {
     const docRef = doc(db, "rooms", roomId);
     const messagesRef = collection(docRef, "messages");
 
-    console.log("Marking messages as read for friend: ", item?.userId);
-
     try {
       // Get all unread messages
       const unreadQuery = query(
@@ -124,7 +122,7 @@ export default function ChatRoom() {
         return;
       }
 
-      console.log(`Found ${unreadSnapshot.size} unread messages`);
+      // console.log(`Found ${unreadSnapshot.size} unread messages`);
 
       // Use batch write to improve performance
       const batch = writeBatch(db);
@@ -195,6 +193,7 @@ export default function ChatRoom() {
       if (recipientSnap.exists()) {
         const recipientData = recipientSnap.data();
   
+        // console.log(recipientData.pushToken)
         if (recipientData.activeRoom === roomId) {
           // Mark the message as read if recipient is in the same room
           await updateDoc(newMessageRef, { isReaded: true });
@@ -202,8 +201,8 @@ export default function ChatRoom() {
           // Send a push notification if recipient is not in the same room
           await sendPushNotification(
             recipientData.pushToken,
-            "New Message",
-            `${user?.profileName}: ${message}`, // Notification title and body
+            `${user?.profileName}`,
+            `${message}`, // Notification title and body
             { roomId } // Optional payload data
           );
         }

@@ -18,6 +18,7 @@ Notifications.setNotificationHandler({
     shouldShowAlert: true, //Shows even if u r in app
     shouldPlaySound: true,
     shouldSetBadge: true,
+    
   }),
 });
 
