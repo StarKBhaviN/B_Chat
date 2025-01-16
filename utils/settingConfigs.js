@@ -1,57 +1,84 @@
-// settingsConfig.js
 export const settingsConfig = [
   {
     id: "usage",
-    title: "Usage",
-    type: "box",
-    description: "10 Mins Used Today",
-  },
-  {
-    id: "profileEdit",
-    title: "Profile Edit",
     type: "row",
-    items: [
-      { id: "editName", label: "Edit Name" },
-      { id: "editProfilePic", label: "Edit Profile Picture" },
+    cols: [
+      {
+        id: "usedToday",
+        title: "10 mins Used Today",
+        icon: "cookie-clock",
+        flex: 4,
+        backgroundColor: "#2f3a4b",
+        textColor: "white",
+        flexDirection : "row",
+        marginTop : -1
+      },
     ],
-    bar: { id: "fontSize", label: "Font Size" },
   },
   {
-    id: "privacy",
-    title: "Privacy",
-    type: "box",
-    description: "Who can see your active status, Last online, About",
+    id: "profileAndPrivacy",
+    type: "row",
+    cols: [
+      {
+        id: "editProfile",
+        title: "Edit Profile",
+        icon: "user",
+        flex: 2,
+      },
+      {
+        id: "privacy",
+        title: "Privacy",
+        icon: "privacy-tip",
+        flex: 2,
+      },
+    ],
   },
   {
-    id: "email",
-    title: "Email Change & Verification",
-    type: "box",
+    id: "additionalOptions",
+    type: "row",
+    cols: [
+      {
+        id: "verifyEmail",
+        title: "Verify Email",
+        icon: "mail",
+        flex: 1,
+      },
+      {
+        id: "socials",
+        title: "Socials",
+        icon: "connect-without-contact",
+        flex: 1,
+      },
+      {
+        id: "sleep",
+        title: "Sleep",
+        icon: "sleep-off",
+        flex: 1,
+      },
+      {
+        id: "theme",
+        title: "Theme",
+        icon: "invert-mode",
+        flex: 1,
+      },
+    ],
   },
   {
-    id: "manageFriends",
-    title: "Manage Friends",
-    type: "box",
-  },
-  {
-    id: "offline",
-    title: "Go Offline/Sleep",
-    type: "button",
-  },
-  {
-    id: "theme",
-    title: "Theme",
-    type: "switch",
-    options: ["Dark", "Light", "System Default"],
-  },
-  {
-    id: "notifications",
-    title: "Notification Settings",
-    type: "box",
-    description: "Coming Soon",
-  },
-  {
-    id: "help",
-    title: "Help",
-    type: "box",
+    id: "notificationsAndHelp",
+    type: "row",
+    cols: [
+      {
+        id: "notifications",
+        title: "Notifications",
+        icon: "bell-o",
+        flex: 3,
+      },
+      {
+        id: "help",
+        title: "Help",
+        icon: "help-circle-outline",
+        flex: 1,
+      },
+    ],
   },
 ];
