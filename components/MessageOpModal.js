@@ -5,7 +5,7 @@ import {
   TouchableOpacity,
   TextInput,
   Modal,
-  TouchableWithoutFeedback
+  TouchableWithoutFeedback,
 } from "react-native";
 import React from "react";
 import { Entypo, MaterialIcons } from "@expo/vector-icons";
@@ -14,7 +14,44 @@ export default function MessageOpModal({
   modalVisible,
   setModalVisible,
   modalPosition,
+  messageData,
+  showReadStatus,
+  handleDelete,
 }) {
+  console.log(messageData);
+
+  const formatTimestamp = (timestamp) => {
+    if (timestamp === undefined || timestamp === null) {
+      return "Unreaded";
+    }
+    const { seconds, nanoseconds } = timestamp;
+    const milliseconds = seconds * 1000 + Math.floor(nanoseconds / 1e6);
+    const date = new Date(milliseconds);
+
+    const now = new Date();
+    const isToday =
+      date.getDate() === now.getDate() &&
+      date.getMonth() === now.getMonth() &&
+      date.getFullYear() === now.getFullYear();
+
+    const hours = date.getHours();
+    const minutes = date.getMinutes();
+    const ampm = hours >= 12 ? "P.M." : "A.M.";
+    const formattedHours = hours % 12 || 12; // Convert 24-hour to 12-hour format
+    const formattedMinutes = minutes < 10 ? `0${minutes}` : minutes;
+
+    const timeString = `${formattedHours}:${formattedMinutes} ${ampm}`;
+
+    if (isToday) {
+      return `Today @ ${timeString}`;
+    } else {
+      const formattedDate = `${date.getDate()}/${
+        date.getMonth() + 1
+      }/${date.getFullYear()}`;
+      return `${formattedDate} ${timeString}`;
+    }
+  };
+
   return (
     <Modal
       visible={modalVisible}
@@ -24,26 +61,89 @@ export default function MessageOpModal({
     >
       <TouchableWithoutFeedback onPress={() => setModalVisible(false)}>
         <View style={styles.modalBackdrop}>
-          <TouchableWithoutFeedback>
-            <View style={[styles.popupView,{position : "absolute", top : modalPosition.top, left : modalPosition.left}]}>
-              <TouchableOpacity style={styles.innerBtns}>
-                <MaterialIcons style={{marginRight : 6}} name="delete-forever" size={20} color={"white"}/>
+          {/* <TouchableWithoutFeedback> */}
+          <View
+            style={[
+              styles.popupView,
+              {
+                position: "absolute",
+                top: modalPosition.top,
+                left: modalPosition.left,
+              },
+            ]}
+          >
+            {showReadStatus && (
+              <TouchableOpacity
+                style={styles.innerBtns}
+                onPress={() => handleDelete(messageData?.messageId)}
+              >
+                <MaterialIcons
+                  style={{ marginRight: 6 }}
+                  name="delete-forever"
+                  size={20}
+                  color={"white"}
+                />
                 <Text style={styles.modalText}>Delete For Everyone</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.innerBtns}>
-                <MaterialIcons style={{marginRight : 6}} name="delete" size={20} color={"white"}/>
-                <Text style={styles.modalText}>Delete For Me</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.innerBtns}>
-                <Entypo style={{marginRight : 6}} name="forward" size={20} color={"white"}/>
-                <Text style={styles.modalText}>Forward Message</Text>
-              </TouchableOpacity>
-              <View style={{display : "flex", alignItems : "flex-end", justifyContent : "flex-end", width : 200, padding : 4, paddingRight : 12}}>
-                <Text style={[styles.modalText,{fontSize : 12, color : "rgb(165, 159, 159)"}]}>Delivered @ 10.00 PM</Text>
-                <Text style={[styles.modalText,{fontSize : 12, color : "rgb(165, 159, 159)"}]}>Readed @ 10.40 PM</Text>
+            )}
+            <TouchableOpacity
+              style={styles.innerBtns}
+              onPress={() => console.log("Delete for me")}
+            >
+              <MaterialIcons
+                style={{ marginRight: 6 }}
+                name="delete"
+                size={20}
+                color={"white"}
+              />
+              <Text style={styles.modalText}>Delete For Me</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.innerBtns}>
+              <Entypo
+                style={{ marginRight: 6 }}
+                name="forward"
+                size={20}
+                color={"white"}
+              />
+              <Text style={styles.modalText}>Forward Message</Text>
+            </TouchableOpacity>
+            <View
+              style={{
+                display: "flex",
+                alignItems: "flex-end",
+                justifyContent: "flex-end",
+                width: 200,
+                padding: 4,
+                paddingRight: 12,
+              }}
+            >
+              <View className="flex flex-row items-center">
+                <Text
+                  style={[
+                    styles.modalText,
+                    { fontSize: 12, color: "rgb(165, 159, 159)" },
+                  ]}
+                >
+                  {formatTimestamp(messageData?.localSendTime)}
+                </Text>
+                <Text style={{ fontSize: 8, marginLeft: 4 }}>🟠🟠</Text>
               </View>
+              {showReadStatus && (
+                <View className="flex flex-row items-center">
+                  <Text
+                    style={[
+                      styles.modalText,
+                      { fontSize: 12, color: "rgb(165, 159, 159)" },
+                    ]}
+                  >
+                    {formatTimestamp(messageData?.readTime)}
+                  </Text>
+                  <Text style={{ fontSize: 8, marginLeft: 4 }}>🟢🟢</Text>
+                </View>
+              )}
             </View>
-          </TouchableWithoutFeedback>
+          </View>
+          {/* </TouchableWithoutFeedback> */}
         </View>
       </TouchableWithoutFeedback>
     </Modal>
@@ -52,14 +152,14 @@ export default function MessageOpModal({
 
 const styles = StyleSheet.create({
   popupView: {
-    flex : 1,
-    justifyContent : "flex-start",
+    flex: 1,
+    justifyContent: "flex-start",
     alignItems: "flex-start",
     // width: 200,
     backgroundColor: "rgb(39, 36, 36)",
     borderRadius: 10,
     // paddingHorizontal: 15,
-    paddingVertical : 6,
+    paddingVertical: 6,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
@@ -70,16 +170,16 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "transparent",
   },
-  innerBtns : {
-    flex : 1,
-    flexDirection : "row",
-    alignItems : "center",
-    justifyContent : "flex-start",
+  innerBtns: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "flex-start",
     // backgroundColor : "red",
     borderRadius: 10,
     paddingHorizontal: 15,
-    paddingVertical : 10,
-    width : 200
+    paddingVertical: 10,
+    width: 200,
   },
   title: {
     fontSize: 20,
@@ -105,7 +205,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
     fontSize: 16,
   },
-  modalText : {
-    color : "white"
-  }
+  modalText: {
+    color: "white",
+  },
 });

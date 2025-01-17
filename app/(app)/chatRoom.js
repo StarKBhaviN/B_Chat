@@ -129,7 +129,7 @@ export default function ChatRoom() {
 
       unreadSnapshot.forEach((messageDoc) => {
         const messageRef = doc(messagesRef, messageDoc.id);
-        batch.update(messageRef, { isReaded: true });
+        batch.update(messageRef, { isReaded: true, readTime : new Date() });
       });
 
       await batch.commit();
@@ -182,6 +182,8 @@ export default function ChatRoom() {
         createdAt: serverTimestamp(),
         localSendTime: new Date(),
         isReaded: false,
+        readTime : null,
+        messageId : `message_${Date.now()}`
       };
 
       const newMessageRef = await addDoc(messagesRef, messageData);
@@ -196,7 +198,7 @@ export default function ChatRoom() {
         // console.log(recipientData.pushToken)
         if (recipientData.activeRoom === roomId) {
           // Mark the message as read if recipient is in the same room
-          await updateDoc(newMessageRef, { isReaded: true });
+          await updateDoc(newMessageRef, { isReaded: true, readTime : new Date() });
         } else if (recipientData.pushToken) {
           // Send a push notification if recipient is not in the same room
           await sendPushNotification(
@@ -231,6 +233,7 @@ export default function ChatRoom() {
   };
 
   const clearActiveRoom = async () => {
+    setInChat(false)
     if (user?.userId) {
       const userRef = doc(db, "users", user?.userId);
       await updateDoc(userRef, {
@@ -323,6 +326,7 @@ export default function ChatRoom() {
             messages={messages}
             currentUser={user}
             isTyping={isTyping}
+            roomId={getRoomID(user?.userId, item?.userId)}
           />
 
           <View style={{ marginBottom: hp(2.5) }} className="pt-2">

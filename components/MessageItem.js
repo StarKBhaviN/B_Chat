@@ -5,6 +5,7 @@ import {
   StyleSheet,
   Pressable,
   Dimensions,
+  Alert,
 } from "react-native";
 import React, { useState, useRef, useEffect, useContext } from "react";
 import {
@@ -13,11 +14,22 @@ import {
 } from "react-native-responsive-screen";
 import MessageOpModal from "./MessageOpModal";
 import { ThemeContext } from "../context/ThemeContext";
+import { db } from "../firebaseConfig";
+import {
+  collection,
+  deleteDoc,
+  doc,
+  getDoc,
+  getDocs,
+  query,
+  where,
+} from "firebase/firestore";
+import { Ionicons } from "@expo/vector-icons";
 
-export default function MessageItem({ message, currentUser }) {
-  const {theme, colorScheme} = useContext(ThemeContext)
+export default function MessageItem({ message, currentUser, roomId}) {
+  const { theme, colorScheme } = useContext(ThemeContext);
   const styles = createStyles(theme, colorScheme);
-  
+
   const [expanded, setExpanded] = useState(false);
   const [visibleLines, setVisibleLines] = useState(8);
   const [showOpModal, setShowOpModal] = useState(false);
@@ -29,17 +41,23 @@ export default function MessageItem({ message, currentUser }) {
   const LINES_TO_SHOW = 8;
   const LINES_INCREMENT = 8;
   const screenWidth = Dimensions.get("window").width;
+  const screenHeight = Dimensions.get("window").height;
 
   const handleLongPress = () => {
     bubbleRef.current.measure((x, y, width, height, pageX, pageY) => {
-      let leftPos = pageX + width / 2;
-
+      console.log(x, y, width, height, pageX, pageY);
+      let leftPos = pageX;
+      let topPos = pageY;
       // Prevent modal from overflowing the screen on the right side
-      if (leftPos + 100 > screenWidth) {
+      if (leftPos + 220 > screenWidth) {
         leftPos = screenWidth - 220; // Adjust to ensure it fits within the screen
       }
 
-      setModalPosition({ top: pageY + height, left: leftPos });
+      if (pageY + 200 > screenHeight) {
+        topPos = screenHeight - height - 220;
+      }
+
+      setModalPosition({ top: topPos + 20, left: leftPos });
       setShowOpModal(true);
     });
   };
@@ -82,6 +100,40 @@ export default function MessageItem({ message, currentUser }) {
     return `${hours}:${formattedMinutes} ${ampm}`;
   };
 
+  const deleteMessageFromFirestore = async (messageId) => {
+    try {
+      // Create a query to find the message based on its unique property (e.g., text)
+      const messagesRef = collection(db, `rooms/${roomId}/messages`);
+      const q = query(messagesRef, where("messageId", "==", messageId)); // Replace "text" with any other unique field if needed
+
+      // Get documents matching the query
+      const querySnapshot = await getDocs(q);
+
+      // If document exists, proceed with deletion
+      if (!querySnapshot.empty) {
+        querySnapshot.forEach(async (docSnap) => {
+          // Retrieve the FirebaseGeneratedId (doc.id) from the document snapshot
+          const messageId = docSnap.id;
+
+          console.log("Found message with ID:", messageId);
+
+          // Delete the document using the FirebaseGeneratedId
+          const messageRef = doc(db, `rooms/${roomId}/messages/${messageId}`);
+          await deleteDoc(messageRef);
+        });
+      } else {
+        console.log("No message found with the given id.");
+      }
+    } catch (error) {
+      console.error("Error deleting message:", error);
+    }
+  };
+
+  const handleDelete = async (messageId) => {
+    console.log("Deleting : ", messageId);
+    await deleteMessageFromFirestore(messageId);
+  };
+
   if (currentUser?.userId === message?.userId) {
     return (
       <TouchableWithoutFeedback onLongPress={handleLongPress}>
@@ -89,7 +141,12 @@ export default function MessageItem({ message, currentUser }) {
           <View style={{ width: wp(80) }}>
             <View
               ref={bubbleRef}
-              style={[styles.messageBubble,{backgroundColor : colorScheme === "dark" ? "#0B192C": "white"}]}
+              style={[
+                styles.messageBubble,
+                {
+                  backgroundColor: colorScheme === "dark" ? "#0B192C" : "white",
+                },
+              ]}
               className="flex self-end p-3 rounded-2xl border border-neutral-500"
             >
               <Text
@@ -113,7 +170,9 @@ export default function MessageItem({ message, currentUser }) {
                 {formatTimestamp(message?.localSendTime)}
               </Text>
             </View>
+            
           </View>
+
           {showOpModal && (
             <TouchableWithoutFeedback onPress={() => setShowOpModal(false)}>
               <View style={StyleSheet.absoluteFill}>
@@ -122,6 +181,9 @@ export default function MessageItem({ message, currentUser }) {
                     setModalVisible={setShowOpModal}
                     modalVisible={showOpModal}
                     modalPosition={modalPosition}
+                    messageData={message}
+                    showReadStatus={true}
+                    handleDelete={handleDelete}
                   />
                 </View>
               </View>
@@ -136,7 +198,12 @@ export default function MessageItem({ message, currentUser }) {
         <View style={{ width: wp(80) }} className="ml-3 mb-3">
           <View
             ref={bubbleRef}
-            style={[styles.messageBubble,{backgroundColor : colorScheme === "dark" ? "#092635": "#ebf4ff"}]}
+            style={[
+              styles.messageBubble,
+              {
+                backgroundColor: colorScheme === "dark" ? "#092635" : "#ebf4ff",
+              },
+            ]}
             className="flex self-start p-3 rounded-2xl border border-neutral-500"
           >
             <Text
@@ -168,6 +235,9 @@ export default function MessageItem({ message, currentUser }) {
                     setModalVisible={setShowOpModal}
                     modalVisible={showOpModal}
                     modalPosition={modalPosition}
+                    messageData={message}
+                    showReadStatus={false}
+                    handleDelete={handleDelete}
                   />
                 </View>
               </View>
@@ -179,11 +249,10 @@ export default function MessageItem({ message, currentUser }) {
   }
 }
 
-
 function createStyles(theme, colorScheme) {
   return StyleSheet.create({
     messageText: {
-      color : theme.glow,
+      color: theme.glow,
       fontSize: hp(1.9),
       lineHeight: hp(2.5),
     },
