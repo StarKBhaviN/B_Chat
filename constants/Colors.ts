@@ -30,7 +30,7 @@ export const Colors = {
     placeholder : "#727275",
     glow : "#b8b8bc",
     specialBg : "#2f3a4b",
-    border : "#1C1D1C",
+    border : "#47474f",
     appBg : "#1B1A22"
   },
 };

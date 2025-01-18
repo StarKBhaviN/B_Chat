@@ -45,6 +45,14 @@ export default function _layout() {
           ),
         }}
       ></Stack.Screen>
+      <Stack.Screen
+        name="beez"
+        options={{
+          header: () => (
+            <HomeHeader title="Beez" showProfile={false} showBack={true} />
+          ),
+        }}
+      ></Stack.Screen>
     </Stack>
   );
 }

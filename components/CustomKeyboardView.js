@@ -39,8 +39,7 @@ export default function CustomKeyboardView({ children, inChat, setInChat }) {
       hideSubscription.remove();
     };
   }, [setInChat]);
-  console.log("inChat:", inChat, "keyboardVerticalOffset:", kavConfig.keyboardVerticalOffset);
-
+  
   return (
     <KeyboardAvoidingView {...kavConfig}>
       <ScrollView {...scrollViewConfig}>{children}</ScrollView>

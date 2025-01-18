@@ -1,4 +1,4 @@
-import { View, Text, Platform, StyleSheet } from "react-native";
+import { View, Text, Platform, StyleSheet, TouchableOpacity } from "react-native";
 import React, { useContext } from "react";
 import {
   widthPercentageToDP as wp,
@@ -54,7 +54,10 @@ export default function HomeHeader({
         </View>
 
         {showProfile && (
-          <View style={{ padding: 0 }}>
+          <View className="flex flex-row items-center" style={{ padding: 0 }}>
+            <TouchableOpacity className="me-4" onPress={() => router.push("beez")}>
+              <Text style={{fontSize : 30, color : "#b8b8bc"}}>ദ</Text>
+            </TouchableOpacity>
             <Menu>
               <MenuTrigger>
                 <Image

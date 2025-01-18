@@ -115,7 +115,7 @@ export default function MessageItem({ message, currentUser, roomId}) {
           // Retrieve the FirebaseGeneratedId (doc.id) from the document snapshot
           const messageId = docSnap.id;
 
-          console.log("Found message with ID:", messageId);
+          // console.log("Found message with ID:", messageId);
 
           // Delete the document using the FirebaseGeneratedId
           const messageRef = doc(db, `rooms/${roomId}/messages/${messageId}`);
@@ -130,8 +130,9 @@ export default function MessageItem({ message, currentUser, roomId}) {
   };
 
   const handleDelete = async (messageId) => {
-    console.log("Deleting : ", messageId);
+    // console.log("Deleting : ", messageId);
     await deleteMessageFromFirestore(messageId);
+    setShowOpModal(false)
   };
 
   if (currentUser?.userId === message?.userId) {
