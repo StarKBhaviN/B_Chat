@@ -48,7 +48,7 @@ export default function MessageList({
   const lastSeenReadTime =
     lastSeenIndex !== -1 ? messages[lastSeenIndex]?.readTime : null;
 
-    console.log("Last seen message : ",messages[lastSeenIndex])
+    // console.log("Last seen message : ",messages[lastSeenIndex])
   return (
     <ScrollView
       ref={scrollViewRef}

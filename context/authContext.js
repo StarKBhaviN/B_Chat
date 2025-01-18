@@ -64,6 +64,7 @@ export const AuthContextProvide = ({ children }) => {
         friends: data.friends,
         status: data.status,
         lastSeen: data.lastSeen,
+        friendReqs : data.friendReqs
       });
     }
   };

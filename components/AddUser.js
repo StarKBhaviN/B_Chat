@@ -41,7 +41,7 @@ export default function AddUser({
 
     try {
       // Step 1: Search for user by profile name
-      const qry = query(usersRef, where("profileName", "==", frndProfile));
+      const qry = query(usersRef, where("profileName", "==", frndProfile.trim()));
       const qrySnapShot = await getDocs(qry);
 
       if (qrySnapShot.empty) {
@@ -68,21 +68,22 @@ export default function AddUser({
       }
 
       // Step 3: Update both users' friend arrays
-      await updateDoc(currentUserRef, {
-        friends: arrayUnion(frndID),
-      });
+      // await updateDoc(currentUserRef, {
+      //   friends: arrayUnion(frndID),
+      // });
       await updateDoc(friendUserRef, {
-        friends: arrayUnion(user?.userId),
+        // friends: arrayUnion(user?.userId),
+        friendReqs : arrayUnion(user?.userId)
       });
 
       // Call the callback to immediately add the user
-      addNewFriend({
-        ...friendData,
-        userId: frndID,
-        lastMessage: null, // Set last message to null initially
-      });
+      // addNewFriend({
+      //   ...friendData,
+      //   userId: frndID,
+      //   lastMessage: null, // Set last message to null initially
+      // });
 
-      Alert.alert("Friend Added!");
+      Alert.alert("Friend Request Sent!");
 
       setModalVisible(false);
       setFrndProfile("");

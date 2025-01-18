@@ -117,10 +117,10 @@ export default function ChatRoom() {
 
       const unreadSnapshot = await getDocs(unreadQuery);
 
-      if (unreadSnapshot.empty) {
-        console.log("No unread messages found!");
-        return;
-      }
+      // if (unreadSnapshot.empty) {
+      //   console.log("No unread messages found!");
+      //   return;
+      // }
 
       // console.log(`Found ${unreadSnapshot.size} unread messages`);
 
@@ -133,7 +133,7 @@ export default function ChatRoom() {
       });
 
       await batch.commit();
-      console.log("All messages marked as read.");
+      // console.log("All messages marked as read.");
     } catch (error) {
       console.error("Error marking messages as read: ", error);
     }
