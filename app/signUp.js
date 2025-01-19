@@ -15,7 +15,7 @@ import {
   heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
 import { StatusBar } from "expo-status-bar";
-import { Entypo, MaterialIcons, Octicons } from "@expo/vector-icons";
+import { AntDesign, Entypo, MaterialIcons, Octicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import Loading from "../components/Loading";
 import CustomKeyboardView from "../components/CustomKeyboardView";
@@ -28,6 +28,7 @@ import { doc, setDoc } from "firebase/firestore";
 import { auth, db } from "../firebaseConfig";
 import axios from "axios";
 import { ThemeContext } from "../context/ThemeContext";
+import { Tooltip } from "react-native-elements";
 
 export default function SignUp() {
   // Import theme context for using theme
@@ -35,12 +36,13 @@ export default function SignUp() {
   const styles = createStyles(theme, colorScheme);
 
   const router = useRouter();
-  const { register } = useAuth();
+  const { register, checkProfileNameAvailability } = useAuth();
   const [loading, setLoading] = useState(false);
   const [image, setImage] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [showPass, setShowPass] = useState(false);
   const [finalImage, setFinalImage] = useState("");
+  const [isAvailable, setIsAvailable] = useState(null);
 
   const emailRef = useRef();
   const passRef = useRef();
@@ -141,6 +143,25 @@ export default function SignUp() {
     }
   };
 
+  const handleChecks = async () => {
+    if (!userNameRef.current?.trim()) {
+      setIsAvailable(null); // Reset if empty
+      return;
+    }
+
+    try {
+      const available = await checkProfileNameAvailability(
+        userNameRef.current.trim()
+      );
+      setIsAvailable(available);
+    } catch (error) {
+      console.error("Error checking profile name availability:", error);
+      setIsAvailable(false);
+    }
+  };
+
+  console.log(isAvailable);
+
   return (
     <SafeAreaView className="flex-1" style={styles.safeContent}>
       <ScrollView
@@ -188,7 +209,35 @@ export default function SignUp() {
                     className="flex-1 font-semibold"
                     placeholder="Name"
                     placeholderTextColor={theme.placeholder}
+                    onBlur={handleChecks}
                   />
+                  {isAvailable === null ? (
+                    ""
+                  ) : isAvailable ? (
+                    <AntDesign
+                      name="checkcircle"
+                      size={24}
+                      color={theme.icon}
+                    />
+                  ) : (
+                    <Tooltip
+                      width={200}
+                      overlayColor="rgba(0,0,0,0.3)"
+                      backgroundColor={theme.background}
+                      containerStyle={{ height: 60 }}
+                      popover={
+                        <Text style={{ color: theme.glow }}>
+                          This username is already taken.
+                        </Text>
+                      }
+                    >
+                      <Entypo
+                        name="circle-with-cross"
+                        size={24}
+                        color={"red"}
+                      />
+                    </Tooltip>
+                  )}
                 </View>
               </View>
 
@@ -306,6 +355,7 @@ export default function SignUp() {
                   <TouchableOpacity
                     onPress={handleRegister}
                     style={{ height: hp(6), backgroundColor: theme.specialBg }}
+                    disabled={isAvailable===null || isAvailable===false}
                     className="mt-2 rounded-xl justify-center items-center"
                   >
                     <Text

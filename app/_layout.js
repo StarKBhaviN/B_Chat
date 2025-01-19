@@ -51,7 +51,7 @@ const MainLayout = () => {
             await updateDoc(userRef, {
               status: "offline",
               lastSeen: serverTimestamp(),
-              activeRoom : null
+              activeRoom: null,
             });
           } else if (nextAppState === "active") {
             // Update Firestore on foreground
@@ -90,25 +90,31 @@ const MainLayout = () => {
     } else if (isAuthenticated == false) {
       // Redirect to Login/SignUp
       router.replace("signIn");
-    }
+    } 
   }, [isAuthenticated]);
 
   return <Slot />;
 };
 
+function RootWithAuth() {
+  const {user} = useAuth()
+  return (
+    <FriendContextProvider userId={user?.userId}>
+      <SafeAreaProvider>
+        <MenuProvider>
+          <MainLayout />
+        </MenuProvider>
+      </SafeAreaProvider>
+    </FriendContextProvider>
+  );
+}
 export default function RootLayout() {
   return (
     <NotificationProvider>
       <ThemeProvider>
-        <FriendContextProvider>
-          <SafeAreaProvider>
-            <MenuProvider>
-              <AuthContextProvide>
-                <MainLayout />
-              </AuthContextProvide>
-            </MenuProvider>
-          </SafeAreaProvider>
-        </FriendContextProvider>
+        <AuthContextProvide>
+          <RootWithAuth />
+        </AuthContextProvide>
       </ThemeProvider>
     </NotificationProvider>
   );

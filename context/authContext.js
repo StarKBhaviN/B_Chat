@@ -9,9 +9,12 @@ import { auth, db, usersRef } from "../firebaseConfig";
 import {
   doc,
   getDoc,
+  getDocs,
+  query,
   serverTimestamp,
   setDoc,
   updateDoc,
+  where,
 } from "firebase/firestore";
 import * as Notifications from "expo-notifications";
 import { registerForPushNotificationsAsync } from "../utils/notifications";
@@ -49,6 +52,17 @@ export const AuthContextProvide = ({ children }) => {
     return () => unSub();
   }, []);
 
+  const checkProfileNameAvailability = async (profileName) => {
+    try {
+      const q = query(usersRef, where("profileName", "==", profileName));
+      const qrySnap = await getDocs(q);
+
+      return qrySnap.empty;
+    } catch (error) {
+      console.error("Error checking profile name availability:", error);
+      return false; // Assume unavailable if an error occurs
+    }
+  };
   const updateUserData = async (userId) => {
     const docRef = doc(db, "users", userId);
     const docSnap = await getDoc(docRef);
@@ -64,7 +78,7 @@ export const AuthContextProvide = ({ children }) => {
         friends: data.friends,
         status: data.status,
         lastSeen: data.lastSeen,
-        friendReqs : data.friendReqs
+        friendReqs: data.friendReqs,
       });
     }
   };
@@ -161,6 +175,7 @@ export const AuthContextProvide = ({ children }) => {
         isAuthenticated,
         login,
         register,
+        checkProfileNameAvailability,
         // signInWithGoogle,
         logout,
       }}

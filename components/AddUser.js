@@ -13,7 +13,7 @@ import { ThemeContext } from "../context/ThemeContext";
 import { useFriendContext } from "../context/friendContext";
 import { getReceiverIdByProfileName } from "../utils/friendService";
 
-export default function AddUser({ modalVisible, setModalVisible }) {
+export default function AddUser({ modalVisible, setModalVisible,addNewFriend }) {
   const { theme, colorScheme } = useContext(ThemeContext);
   const styles = createStyles(theme, colorScheme);
 
@@ -162,6 +162,7 @@ function createStyles(theme, colorScheme) {
     txtAdd: {
       color: "white",
       fontWeight: "bold",
+      fontSize : 10
     },
     txtCancel: {
       textAlign: "center",

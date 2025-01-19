@@ -65,6 +65,15 @@ export default function Home() {
     if (!user?.userId || dataFetched.current) return;
 
     setLoading(true);
+
+    unsubscribeUser.current = onSnapshot(
+      doc(usersRef, user.userId),
+      (docSnap) => {
+        const friendIds = docSnap.data()?.friends || [];
+        listenToFriendStatus(friendIds);
+      }
+    );
+
     const currentUserDoc = await getDoc(doc(usersRef, user?.userId));
     const friendIds = currentUserDoc.data()?.friends || [];
 
@@ -121,9 +130,16 @@ export default function Home() {
         const unsub = onSnapshot(doc(usersRef, friendId), (docSnap) => {
           const updatedUser = docSnap.data();
           setUsers((prevUsers) => {
-            return prevUsers.map((u) =>
-              u.userId === friendId ? { ...u, ...updatedUser } : u
-            );
+            const existing = prevUsers.find((u) => u.userId === friendId);
+            if (existing) {
+              // Update the existing user
+              return prevUsers.map((u) =>
+                u.userId === friendId ? { ...u, ...updatedUser } : u
+              );
+            } else {
+              // Add a new user
+              return [...prevUsers, updatedUser];
+            }
           });
         });
         listeners.current.set(friendId, unsub);

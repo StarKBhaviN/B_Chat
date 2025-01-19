@@ -4,12 +4,23 @@ import {
   getFriendRequests,
   acceptFriendRequest,
   deleteFrndReqs,
+  listenToFriendRequests,
 } from "../utils/friendService"; // Adjust path as necessary
 
 export const FriendContext = createContext();
 
-export const FriendContextProvider = ({ children }) => {
+export const FriendContextProvider = ({ children, userId }) => {
   const [friendRequests, setFriendRequests] = useState([]);
+
+  useEffect(() => {
+    if (!userId) return;
+
+    const unsubscribe = listenToFriendRequests(userId, setFriendRequests);
+
+    return () => {
+      unsubscribe(); // Stop listening when the component unmounts or userId changes
+    };
+  }, [userId]);
 
   // Fetch friend requests
   const fetchFriendRequests = async (userId) => {
