@@ -11,14 +11,13 @@ import { auth, db, usersRef } from "../firebaseConfig";
 import ThemeProvider from "../context/ThemeContext";
 import { NotificationProvider } from "../context/NotificationContext";
 import * as Notifications from "expo-notifications";
-
+import { FriendContextProvider } from "../context/friendContext";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true, //Shows even if u r in app
     shouldPlaySound: true,
     shouldSetBadge: true,
-    
   }),
 });
 
@@ -52,6 +51,7 @@ const MainLayout = () => {
             await updateDoc(userRef, {
               status: "offline",
               lastSeen: serverTimestamp(),
+              activeRoom : null
             });
           } else if (nextAppState === "active") {
             // Update Firestore on foreground
@@ -100,13 +100,15 @@ export default function RootLayout() {
   return (
     <NotificationProvider>
       <ThemeProvider>
-        <SafeAreaProvider>
-          <MenuProvider>
-            <AuthContextProvide>
-              <MainLayout />
-            </AuthContextProvide>
-          </MenuProvider>
-        </SafeAreaProvider>
+        <FriendContextProvider>
+          <SafeAreaProvider>
+            <MenuProvider>
+              <AuthContextProvide>
+                <MainLayout />
+              </AuthContextProvide>
+            </MenuProvider>
+          </SafeAreaProvider>
+        </FriendContextProvider>
       </ThemeProvider>
     </NotificationProvider>
   );

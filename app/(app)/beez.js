@@ -16,55 +16,32 @@ import { SequencedTransition } from "react-native-reanimated";
 import { useAuth } from "../../context/authContext";
 import { getDocs, query, where } from "firebase/firestore";
 import { usersRef } from "../../firebaseConfig";
+import { useFriendContext } from "../../context/friendContext";
 
 export default function beez() {
   const { theme } = useContext(ThemeContext);
   const { user } = useAuth();
+  const { friendRequests, fetchFriendRequests, acceptRequest, delRequest } =
+    useFriendContext();
 
-  const [reqs, setReqs] = useState([]);
+  // Fetch friend requests on component mount
+  useEffect(() => {
+    if (user?.userId) {
+      fetchFriendRequests(user.userId);
+    }
+  }, [user]);
 
-  const getFrndReqs = async () => {
-    const userQry = query(usersRef, where("userId", "==", user?.userId));
-    const snapshot = await getDocs(userQry);
-
-    let friendRequests = [];
-    snapshot.forEach((doc) => {
-      const data = doc.data();
-      if (data.friendReqs) {
-        friendRequests = friendRequests.concat(data.friendReqs);
-      }
-    });
-
-    // console.log("Friend Requests IDs:", friendRequests);
-
-    // Fetch data for each friendReq userId
-    const friendDataPromises = friendRequests.map(async (friendId) => {
-      const friendQuery = query(usersRef, where("userId", "==", friendId));
-      const friendSnapshot = await getDocs(friendQuery);
-
-      const friendData = [];
-      friendSnapshot.forEach((doc) => {
-        const { profileName, profileURL } = doc.data();
-        friendData.push({
-          profileName,
-          profileURL,
-          sendReqMsg: "Hey, Add me as friend!!!",
-          userId: doc.id,
-        }); // Add doc.id for reference if needed
-      });
-
-      return friendData[0]; // Assuming there's only one document per userId
-    });
-
-    const friendsData = await Promise.all(friendDataPromises);
-
-    setReqs(friendsData); // Update state with detailed friend data
-    console.log(reqs)
+  // Accept friend request handler
+  const handleAcceptRequest = async (friendId) => {
+    const result = await acceptRequest(user.userId, friendId);
+    alert(result);
   };
 
-  useEffect(() => {
-    getFrndReqs();
-  }, [reqs.length]);
+  const handleDelReq = async (incomingId) => {
+    console.log(user.userId, incomingId);
+    const res = await delRequest(user.userId, incomingId);
+    alert(res);
+  };
 
   return (
     <View className="flex-1 px-4 py-2" style={{ backgroundColor: theme.appBg }}>
@@ -76,15 +53,21 @@ export default function beez() {
         className="border rounded-xl p-2 mb-4"
         style={{ maxHeight: hp(40), borderColor: theme.border }}
       >
-        {reqs.length > 0 ? (
+        {friendRequests.length > 0 ? (
           <Animated.FlatList
             itemLayoutAnimation={SequencedTransition}
-            data={reqs}
+            data={friendRequests}
             // contentContainerStyle={{ paddingVertical: 8 }}
             keyExtractor={(item) => item.userId}
             showsVerticalScrollIndicator={false}
             renderItem={({ item, index }) => {
-              return <BeeRequest data={item} index={index} user={user} />;
+              return (
+                <BeeRequest
+                  data={item}
+                  onAccept={() => handleAcceptRequest(item.senderId)}
+                  onReject={() => handleDelReq(item.senderId)}
+                />
+              );
             }}
           />
         ) : (

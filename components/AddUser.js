@@ -9,89 +9,46 @@ import {
 import React, { useContext, useState } from "react";
 import { StyleSheet } from "react-native";
 import { useAuth } from "../context/authContext";
-import {
-  arrayUnion,
-  doc,
-  getDoc,
-  getDocs,
-  query,
-  updateDoc,
-  where,
-} from "firebase/firestore";
-import { usersRef } from "../firebaseConfig";
 import { ThemeContext } from "../context/ThemeContext";
+import { useFriendContext } from "../context/friendContext";
+import { getReceiverIdByProfileName } from "../utils/friendService";
 
-export default function AddUser({
-  modalVisible,
-  setModalVisible,
-  addNewFriend,
-}) {
+export default function AddUser({ modalVisible, setModalVisible }) {
   const { theme, colorScheme } = useContext(ThemeContext);
   const styles = createStyles(theme, colorScheme);
 
-  const [frndProfile, setFrndProfile] = useState("");
+  const [receiverName, setReceiverName] = useState("");
+  const [reqMessage, setReqMessage] = useState("");
+
   const [adding, setAdding] = useState(false); // State to track loading
   const { user } = useAuth();
 
-  const handleAddFriend = async () => {
-    if (!user || adding) {
+  const { sendRequest } = useFriendContext();
+
+  const handleSendRequest = async () => {
+    setAdding(true);
+    // Sender : user.userId | Receiver : Other person
+    if (!user?.userId || !receiverName.trim()) {
+      Alert.alert("Error", "Please enter a valid profile name.");
       return;
     }
-    setAdding(true); // Start loading
 
     try {
-      // Step 1: Search for user by profile name
-      const qry = query(usersRef, where("profileName", "==", frndProfile.trim()));
-      const qrySnapShot = await getDocs(qry);
-
-      if (qrySnapShot.empty) {
-        Alert.alert("User Not Found");
-        setAdding(false);
-        return;
-      }
-
-      const friend = qrySnapShot.docs[0];
-      const frndID = friend.id;
-      const friendData = friend.data();
-
-      // Step 2: Check if already connected
-      const currentUserRef = doc(usersRef, user?.userId);
-      const friendUserRef = doc(usersRef, frndID);
-
-      const currentUserDoc = await getDoc(currentUserRef);
-      const friends = currentUserDoc.data()?.friends || [];
-
-      if (friends.includes(frndID)) {
-        Alert.alert("Already added to Friends.");
-        setAdding(false);
-        return;
-      }
-
-      // Step 3: Update both users' friend arrays
-      // await updateDoc(currentUserRef, {
-      //   friends: arrayUnion(frndID),
-      // });
-      await updateDoc(friendUserRef, {
-        // friends: arrayUnion(user?.userId),
-        friendReqs : arrayUnion(user?.userId)
-      });
-
-      // Call the callback to immediately add the user
-      // addNewFriend({
-      //   ...friendData,
-      //   userId: frndID,
-      //   lastMessage: null, // Set last message to null initially
-      // });
-
-      Alert.alert("Friend Request Sent!");
-
+      const receiverId = await getReceiverIdByProfileName(receiverName.trim());
+      const result = await sendRequest(
+        user.userId,
+        receiverId,
+        reqMessage.trim() || "Heyy!!! Add me to have a Bee 👋😉"
+      );
+      Alert.alert("Request Status", result);
+      setReceiverName("");
+      setReqMessage("");
       setModalVisible(false);
-      setFrndProfile("");
     } catch (error) {
-      console.error("Error adding friend: ", error);
-      Alert.alert("Error", "Something went wrong. Please try again.");
+      console.error("Error in handleSendRequest:", error.message);
+      Alert.alert("Error", "Failed to send friend request.");
     } finally {
-      setAdding(false); // Stop loading
+      setAdding(false);
     }
   };
 
@@ -107,11 +64,20 @@ export default function AddUser({
           <Text style={styles.title}>Add Friend</Text>
 
           <TextInput
-            value={frndProfile}
-            onChangeText={(text) => setFrndProfile(text)}
+            value={receiverName}
+            onChangeText={(text) => setReceiverName(text)}
             placeholder="Enter friend's profile"
             placeholderTextColor={theme.placeholder}
+            style={[styles.input, { marginBottom: 10 }]}
+          />
+
+          <TextInput
+            value={reqMessage}
+            onChangeText={(text) => setReqMessage(text)}
+            placeholder="Send a message with request 😉"
+            placeholderTextColor={theme.placeholder}
             style={styles.input}
+            maxLength={52}
           />
 
           <View style={styles.btnContainer}>
@@ -121,13 +87,15 @@ export default function AddUser({
                 styles.btnAdd,
                 adding ? { backgroundColor: "gray" } : {}, // Disable button if loading
               ]}
-              onPress={handleAddFriend}
+              onPress={handleSendRequest}
               disabled={adding}
             >
               <Text style={styles.txtAdd}>{adding ? "Adding..." : "Add"}</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              className={`flex items-center justify-center border rounded-lg ${colorScheme === "dark" ? "border-gray-700" : "border-black"}`}
+              className={`flex items-center justify-center border rounded-lg ${
+                colorScheme === "dark" ? "border-gray-700" : "border-black"
+              }`}
               style={styles.btnCancel}
               onPress={() => setModalVisible(false)}
             >
