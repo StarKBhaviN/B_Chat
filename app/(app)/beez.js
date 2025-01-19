@@ -59,12 +59,12 @@ export default function beez() {
     const friendsData = await Promise.all(friendDataPromises);
 
     setReqs(friendsData); // Update state with detailed friend data
+    console.log(reqs)
   };
 
-  console.log(user)
   useEffect(() => {
     getFrndReqs();
-  }, [user]);
+  }, [reqs.length]);
 
   return (
     <View className="flex-1 px-4 py-2" style={{ backgroundColor: theme.appBg }}>
@@ -76,19 +76,22 @@ export default function beez() {
         className="border rounded-xl p-2 mb-4"
         style={{ maxHeight: hp(40), borderColor: theme.border }}
       >
-        {/* <ScrollView showsVerticalScrollIndicator={false} bounces={true}> */}
-        <Animated.FlatList
-          itemLayoutAnimation={SequencedTransition}
-          data={reqs}
-          // contentContainerStyle={{ paddingVertical: 8 }}
-          keyExtractor={(item) => item.userId}
-          showsVerticalScrollIndicator={false}
-          renderItem={({ item, index }) => {
-            console.log(item);
-            return <BeeRequest data={item} index={index} user={user} />;
-          }}
-        />
-        {/* </ScrollView> */}
+        {reqs.length > 0 ? (
+          <Animated.FlatList
+            itemLayoutAnimation={SequencedTransition}
+            data={reqs}
+            // contentContainerStyle={{ paddingVertical: 8 }}
+            keyExtractor={(item) => item.userId}
+            showsVerticalScrollIndicator={false}
+            renderItem={({ item, index }) => {
+              return <BeeRequest data={item} index={index} user={user} />;
+            }}
+          />
+        ) : (
+          <View className="p-2">
+            <Text style={{ color: theme.text }}>No pending Requests</Text>
+          </View>
+        )}
       </View>
 
       {/* Other notifications */}

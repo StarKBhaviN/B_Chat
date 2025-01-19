@@ -16,7 +16,6 @@ import { usersRef } from "../firebaseConfig";
 export default function BeeRequest({ data }) {
   const { theme, colorScheme } = useContext(ThemeContext);
   const { user } = useAuth();
-  // console.log("Bee data", data);
 
   const deleteFrndReqs = async (requestId) => {
     try {
@@ -27,12 +26,10 @@ export default function BeeRequest({ data }) {
         const docId = docSnapshot.id;
         const { friendReqs } = docSnapshot.data();
 
-        // Ensure friendReqs is an array and filter by the correct request ID
         const updatedFriendReqs = Array.isArray(friendReqs)
           ? friendReqs.filter((req) => req !== requestId)
           : [];
 
-        // Update the friendReqs field in Firestore
         await updateDoc(doc(usersRef, docId), {
           friendReqs: updatedFriendReqs,
         });
@@ -42,8 +39,56 @@ export default function BeeRequest({ data }) {
     }
   };
 
+  const acceptFrndReq = async (requestId) => {
+    try {
+      // Query the current user's document to update their friendReqs and friends fields
+      const userQry = query(usersRef, where("userId", "==", user?.userId));
+      const snapshot = await getDocs(userQry);
+  
+      snapshot.forEach(async (docSnapshot) => {
+        const docId = docSnapshot.id;
+        const { friendReqs = [], friends = [] } = docSnapshot.data();
+  
+        // Remove the requestId from friendReqs and add it to friends
+        const updatedFriendReqs = friendReqs.filter((req) => req !== requestId);
+        const updatedFriends = [...friends, requestId];
+  
+        // Update the current user's Firestore document
+        await updateDoc(doc(usersRef, docId), {
+          friendReqs: updatedFriendReqs,
+          friends: updatedFriends,
+        });
+      });
+  
+      // Now, query the friend (request sender)'s document and update their friends list
+      const senderQry = query(usersRef, where("userId", "==", requestId));
+      const senderSnapshot = await getDocs(senderQry);
+  
+      senderSnapshot.forEach(async (docSnapshot) => {
+        const docId = docSnapshot.id;
+        const { friendReqs = [], friends = [] } = docSnapshot.data();
+  
+        // Remove the current user's ID from the friend's friendReqs
+        const updatedFriendReqs = friendReqs.filter((req) => req !== user?.userId);
+        const updatedFriends = [...friends, user?.userId];
+  
+        // Update the sender's Firestore document
+        await updateDoc(doc(usersRef, docId), {
+          friendReqs: updatedFriendReqs,
+          friends: updatedFriends,
+        });
+      });
+    } catch (error) {
+      console.error("Error accepting friend request: ", error);
+    }
+  };
+
   const handleDelReq = () => {
-    deleteFrndReqs(data.userId); // Use the correct unique identifier
+    deleteFrndReqs(data.userId);
+  };
+
+  const handleAcceptReq = () => {
+    acceptFrndReq(data.userId);
   };
 
   return (
@@ -89,6 +134,7 @@ export default function BeeRequest({ data }) {
             />
           </TouchableOpacity>
           <TouchableOpacity
+            onPress={handleAcceptReq}
             className="p-2 rounded-lg"
             style={{ backgroundColor: theme.tint }}
           >

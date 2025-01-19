@@ -13,7 +13,6 @@ export default function _layout() {
       if (auth.currentUser?.uid) {
         const docRef = doc(db, "users", auth.currentUser.uid);
         await updateDoc(docRef, { pushToken: token });
-        console.log("In _layout done adding token");
       }
     });
 
