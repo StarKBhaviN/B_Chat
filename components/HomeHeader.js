@@ -1,4 +1,10 @@
-import { View, Text, Platform, StyleSheet, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  Platform,
+  StyleSheet,
+  TouchableOpacity,
+} from "react-native";
 import React, { useContext } from "react";
 import {
   widthPercentageToDP as wp,
@@ -19,6 +25,8 @@ import { AntDesign, Feather, Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { ThemeContext } from "../context/ThemeContext";
 import { StatusBar } from "expo-status-bar";
+import { Badge } from "react-native-elements";
+import { useFriendContext } from "../context/friendContext";
 
 const ios = Platform.OS == "ios";
 
@@ -28,6 +36,7 @@ export default function HomeHeader({
   showBack = false,
 }) {
   const { colorScheme, theme } = useContext(ThemeContext);
+  const { friendRequests } = useFriendContext();
   const styles = createStyles(theme, colorScheme);
 
   const { user, logout } = useAuth();
@@ -55,8 +64,19 @@ export default function HomeHeader({
 
         {showProfile && (
           <View className="flex flex-row items-center" style={{ padding: 0 }}>
-            <TouchableOpacity className="me-4" onPress={() => router.push("beez")}>
-              <Text style={{fontSize : 30, color : "#b8b8bc"}}>ദ</Text>
+            <TouchableOpacity
+              className="me-3"
+              onPress={() => router.push("beez")}
+            >
+              <View className="px-2">
+                {friendRequests.length > 0 && (
+                  <Badge
+                    status="primary"
+                    containerStyle={{ position: "absolute", top: 4, right: 0 }}
+                  />
+                )}
+                <Text style={{ fontSize: 30, color: "#b8b8bc" }}>ദ</Text>
+              </View>
             </TouchableOpacity>
             <Menu>
               <MenuTrigger>

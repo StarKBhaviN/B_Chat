@@ -7,8 +7,21 @@ import {
   getDocs,
   query,
   where,
+  onSnapshot,
 } from "firebase/firestore";
 import { usersRef } from "../firebaseConfig";
+import { sendPushNotification } from "./pushNotification";
+
+export const listenToFriendRequests = (userId, callback) => {
+  const userDocRef = doc(usersRef, userId);
+  const unsubscribe = onSnapshot(userDocRef, (doc) => {
+    if (doc.exists()) {
+      const { friendReqs = [] } = doc.data();
+      callback(friendReqs);
+    }
+  });
+  return unsubscribe;
+};
 
 // Utility function to get receiverId by profile name
 export async function getReceiverIdByProfileName(profileName) {
@@ -26,34 +39,52 @@ export const sendFriendRequest = async (senderId, receiverId, message) => {
       throw new Error("Invalid sender or receiver ID.");
     }
 
+    const senderDocRef = doc(usersRef, senderId);
     const receiverDocRef = doc(usersRef, receiverId);
 
+    const senderDoc = await getDoc(senderDocRef);
     // Fetch the receiver's data to check for existing connections
     const receiverDoc = await getDoc(receiverDocRef);
+
     if (!receiverDoc.exists()) {
       throw new Error("Receiver not found.");
     }
 
-    const { friends = [], friendReqs = [] } = receiverDoc.data();
+    const { profileName } = senderDoc.data();
+    const { friends = [], friendReqs = [], pushToken } = receiverDoc.data();
 
     // Check if the sender is already a friend or has sent a request
     if (friends.includes(senderId)) {
       return "You are already connected.";
     }
 
-    if (friendReqs.includes(senderId)) {
+    // Check if a friend request has already been sent
+    const isAlreadyRequested = friendReqs.some(
+      (req) => req.senderId === senderId
+    );
+
+    if (isAlreadyRequested) {
       return "Friend request already sent.";
     }
-
     // Add senderId to the receiver's friendRequests array
     await updateDoc(receiverDocRef, {
       friendReqs: arrayUnion({
         senderId,
-        message: message || "Hey, add me as your friend!", // Default message if none provided
+        message: message,
         timestamp: Date.now(),
       }),
     });
 
+    await sendPushNotification(
+      pushToken,
+      `Bee Request : ${profileName}`,
+      `${profileName} sent you a bee request.\nMSG : ${message}`,
+      {
+        noti_type: "Friend_Request",
+        senderId: senderId,
+        senderName: profileName,
+      }
+    );
     return "Friend request sent successfully.";
   } catch (error) {
     console.error("Error sending friend request:", error.message);
@@ -74,6 +105,7 @@ export const getFriendRequests = async (userId) => {
       const friendRequestsData = await Promise.all(
         friendRequests.map(async (req) => {
           const { senderId, message, timestamp } = req; // Extract message and timestamp
+          console.log(senderId);
           const friendDocRef = doc(usersRef, senderId);
           const friendDoc = await getDoc(friendDocRef);
 
@@ -99,17 +131,18 @@ export const getFriendRequests = async (userId) => {
 // Accept Friend Request
 export const acceptFriendRequest = async (userId, senderId) => {
   try {
-    console.log(userId, senderId)
     const userDocRef = doc(usersRef, userId);
     const senderDocRef = doc(usersRef, senderId);
 
     // Fetch user's current friend requests
     const userDoc = await getDoc(userDocRef);
+    const senderDoc = await getDoc(senderDocRef);
     if (!userDoc.exists()) {
       throw new Error("User not found.");
     }
 
-    const { friendReqs = [] } = userDoc.data();
+    const { profileName, friendReqs = [] } = userDoc.data();
+    const { pushToken } = senderDoc.data();
 
     // Find the friend request object to remove
     const requestToRemove = friendReqs.find((req) => req.senderId === senderId);
@@ -127,6 +160,16 @@ export const acceptFriendRequest = async (userId, senderId) => {
       friends: arrayUnion(userId),
     });
 
+    await sendPushNotification(
+      pushToken,
+      `Bee Accepted : ${profileName}`,
+      `${profileName} Accepted your Bee request.`,
+      {
+        noti_type: "Friend_Accepted",
+        senderId: senderId,
+        senderName: profileName,
+      }
+    );
     return "Friend request accepted.";
   } catch (error) {
     console.error("Error accepting friend request:", error);
@@ -144,7 +187,9 @@ export const deleteFrndReqs = async (userId, incomingId) => {
       const { friendReqs = [] } = userDoc.data();
 
       // Filter out the request by matching senderId
-      const updatedFriendReqs = friendReqs.filter((req) => req.senderId !== incomingId);
+      const updatedFriendReqs = friendReqs.filter(
+        (req) => req.senderId !== incomingId
+      );
 
       // Update the document with the filtered friend requests
       await updateDoc(userDocRef, {

@@ -14,8 +14,6 @@ import BeeRequest from "../../components/BeeRequest";
 import { ThemeContext } from "../../context/ThemeContext";
 import { SequencedTransition } from "react-native-reanimated";
 import { useAuth } from "../../context/authContext";
-import { getDocs, query, where } from "firebase/firestore";
-import { usersRef } from "../../firebaseConfig";
 import { useFriendContext } from "../../context/friendContext";
 
 export default function beez() {
@@ -29,7 +27,7 @@ export default function beez() {
     if (user?.userId) {
       fetchFriendRequests(user.userId);
     }
-  }, [user]);
+  }, [user, friendRequests.length]);
 
   // Accept friend request handler
   const handleAcceptRequest = async (friendId) => {
@@ -58,7 +56,7 @@ export default function beez() {
             itemLayoutAnimation={SequencedTransition}
             data={friendRequests}
             // contentContainerStyle={{ paddingVertical: 8 }}
-            keyExtractor={(item) => item.userId}
+            keyExtractor={(item) => item.senderId}
             showsVerticalScrollIndicator={false}
             renderItem={({ item, index }) => {
               return (
@@ -83,17 +81,15 @@ export default function beez() {
       </Text>
 
       <View
-        className="border rounded-xl p-2 mb-4"
-        style={{ maxHeight: hp(40), borderColor: theme.border }}
+        className="border rounded-xl p-2 mb-4 flex-1 flex-grow"
+        style={{ borderColor: theme.border }}
       >
-        <ScrollView showsVerticalScrollIndicator={false} bounces={true}>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          bounces={true}
+          contentContainerStyle={{ paddingBottom: hp(3) }}
+        >
           {/* Ahiya j flatList aavse ema announcement data moklvana */}
-          <BeeRequest />
-          <BeeRequest />
-          <BeeRequest />
-          <BeeRequest />
-          <BeeRequest />
-          <BeeRequest />
           <BeeRequest />
         </ScrollView>
       </View>

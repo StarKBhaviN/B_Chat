@@ -11,6 +11,15 @@ export const sendPushNotification = async (
       title,
       body,
       data, // Optional data payload
+      android: {
+        notification: {
+          channelId: "default",
+          tag: data.senderId,
+        },
+      },
+      ios: {
+        group: data.senderId,
+      },
     };
 
     const response = await fetch("https://exp.host/--/api/v2/push/send", {

@@ -41,6 +41,7 @@ export default function AddUser({ modalVisible, setModalVisible }) {
         reqMessage.trim() || "Heyy!!! Add me to have a Bee 👋😉"
       );
       Alert.alert("Request Status", result);
+      
       setReceiverName("");
       setReqMessage("");
       setModalVisible(false);

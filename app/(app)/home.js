@@ -37,17 +37,17 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import AddUser from "../../components/AddUser";
 import { getRoomID } from "../../utils/common";
 import { ThemeContext } from "../../context/ThemeContext";
-import { useNotification } from "../../context/NotificationContext";
+// import { useNotification } from "../../context/NotificationContext";
 
 export default function Home() {
   const { theme, colorScheme } = useContext(ThemeContext);
   const styles = createStyles(theme, colorScheme);
-  const {expoPushToken, notification, error} = useNotification()
+  // const { expoPushToken, notification, error } = useNotification();
 
-  if (error) {
-    return <Text>{error}</Text>
-  }
-  console.log(expoPushToken, notification, error)
+  // if (error) {
+  //   return <Text>{error}</Text>;
+  // }
+  // console.log(expoPushToken, notification, error);
   const { user } = useAuth();
   const [users, setUsers] = useState([]);
   const [showModal, setShowModal] = useState(false);
@@ -173,7 +173,7 @@ export default function Home() {
       ) : sortedUsers.length > 0 ? (
         <ChatList currentUser={user} users={sortedUsers} />
       ) : (
-        <Text className="text-center mt-10">No users available</Text>
+        <Text className="text-center mt-10">No Beez available</Text>
       )}
 
       <TouchableOpacity
@@ -195,7 +195,7 @@ export default function Home() {
 function createStyles(theme, colorScheme) {
   return StyleSheet.create({
     touchBtn: {
-      backgroundColor : "#2f3a4b",
+      backgroundColor: "#2f3a4b",
       position: "absolute",
       bottom: hp(2.5),
       right: wp(5),

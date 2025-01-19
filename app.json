@@ -11,6 +11,10 @@
     "ios": {
       "supportsTablet": true
     },
+    // "notification": {
+    //   "androidMode": "collapse",
+    //   "androidCollapsedTitle": "Notifications collabpes"
+    // },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/B.png",

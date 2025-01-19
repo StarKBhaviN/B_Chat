@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import {
   sendFriendRequest,
   getFriendRequests,
@@ -18,10 +18,17 @@ export const FriendContextProvider = ({ children }) => {
   };
 
   // Send a friend request
-  const sendRequest = async (senderId, receiverId,message) => {
+  const sendRequest = async (senderId, receiverId, message) => {
     try {
-      const result = await sendFriendRequest(senderId, receiverId,message);
-      return result; 
+      const result = await sendFriendRequest(senderId, receiverId, message);
+      // Update the state immediately after sending the request
+      // const newRequest = { senderId, receiverId, message };
+      // setFriendRequests((prevRequests) => [...prevRequests, newRequest]);
+
+      // Re-fetch to ensure any server-side updates are reflected
+      await fetchFriendRequests(receiverId);
+
+      return result;
     } catch (error) {
       console.error("Error in sendRequest:", error.message);
       return "Failed to send request.";
@@ -37,7 +44,7 @@ export const FriendContextProvider = ({ children }) => {
 
   //   Reject a friend request
   const delRequest = async (userId, incomingId) => {
-    const result = await deleteFrndReqs(userId,incomingId);
+    const result = await deleteFrndReqs(userId, incomingId);
     await fetchFriendRequests(userId);
     return result;
   };
@@ -46,6 +53,7 @@ export const FriendContextProvider = ({ children }) => {
     <FriendContext.Provider
       value={{
         friendRequests,
+        setFriendRequests,
         fetchFriendRequests,
         sendRequest,
         acceptRequest,
