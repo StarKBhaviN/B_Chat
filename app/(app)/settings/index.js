@@ -7,11 +7,11 @@ import {
   MaterialCommunityIcons,
   MaterialIcons,
 } from "@expo/vector-icons";
-import { settingsConfig } from "../../utils/settingConfigs";
-import { ThemeContext } from "../../context/ThemeContext";
+import { settingsConfig } from "../../../utils/settingConfigs";
+import { ThemeContext } from "../../../context/ThemeContext";
 
-export default function Settings() {
-  const { theme } = useContext(ThemeContext);
+export default function settingsScreen({ navigation }) {
+  const { theme, toggleThemeMode, colorScheme } = useContext(ThemeContext);
 
   const IconMap = {
     "cookie-clock": MaterialCommunityIcons,
@@ -38,6 +38,13 @@ export default function Settings() {
             flexDirection: col.flexDirection || "column",
           },
         ]}
+        onPress={() => {
+          if (col.route) navigation.navigate(col.route);
+          if (col.action) col.action();
+          if (col.id === "theme") {
+            toggleThemeMode();
+          }
+        }}
       >
         {Icon && <Icon name={col.icon} size={24} color={theme.icon} />}
         <Text
@@ -47,7 +54,7 @@ export default function Settings() {
             marginTop: col.marginTop || 3,
           }}
         >
-          {col.title}
+          {col.id !== "theme" ? col.title : colorScheme==="light" ? "Dark" : "Light"}
         </Text>
       </TouchableOpacity>
     );
@@ -58,7 +65,6 @@ export default function Settings() {
       {row.cols.map(renderCol)}
     </View>
   );
-
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
       {settingsConfig.map(renderRow)}

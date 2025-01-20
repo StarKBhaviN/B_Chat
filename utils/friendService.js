@@ -36,7 +36,10 @@ export async function getReceiverIdByProfileName(profileName) {
 export const sendFriendRequest = async (senderId, receiverId, message) => {
   try {
     if (!senderId) {
-      throw new Error("Invalid sender or receiver ID.");
+      return {Success : false , Message : "Invalid sender or receiver ID."};
+    }
+    if (!receiverId) {
+      return {Success : false , Message : "Bee User not found."};
     }
 
     const senderDocRef = doc(usersRef, senderId);
@@ -55,7 +58,7 @@ export const sendFriendRequest = async (senderId, receiverId, message) => {
 
     // Check if the sender is already a friend or has sent a request
     if (friends.includes(senderId)) {
-      return "You are already connected.";
+      return {Success : false , Message : "You are already connected."};
     }
 
     // Check if a friend request has already been sent
@@ -64,8 +67,9 @@ export const sendFriendRequest = async (senderId, receiverId, message) => {
     );
 
     if (isAlreadyRequested) {
-      return "Friend request already sent.";
+      return {Success : false , Message : "Friend request already sent."};
     }
+    
     // Add senderId to the receiver's friendRequests array
     await updateDoc(receiverDocRef, {
       friendReqs: arrayUnion({
@@ -85,7 +89,7 @@ export const sendFriendRequest = async (senderId, receiverId, message) => {
         senderName: profileName,
       }
     );
-    return "Friend request sent successfully.";
+    return { Success: true, Message: "Friend request sent successfully." };
   } catch (error) {
     console.error("Error sending friend request:", error.message);
     return error.message || "Failed to send friend request.";

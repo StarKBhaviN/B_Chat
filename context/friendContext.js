@@ -32,13 +32,9 @@ export const FriendContextProvider = ({ children, userId }) => {
   const sendRequest = async (senderId, receiverId, message) => {
     try {
       const result = await sendFriendRequest(senderId, receiverId, message);
-      // Update the state immediately after sending the request
-      // const newRequest = { senderId, receiverId, message };
-      // setFriendRequests((prevRequests) => [...prevRequests, newRequest]);
-
-      // Re-fetch to ensure any server-side updates are reflected
-      await fetchFriendRequests(receiverId);
-
+      if (result.Success) {
+        await fetchFriendRequests(receiverId);
+      }
       return result;
     } catch (error) {
       console.error("Error in sendRequest:", error.message);

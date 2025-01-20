@@ -1,3 +1,5 @@
+import { handleProfileEdit, onPrivacyClicked } from "./settingActions";
+
 export const settingsConfig = [
   {
     id: "usage",
@@ -24,12 +26,14 @@ export const settingsConfig = [
         title: "Edit Profile",
         icon: "user",
         flex: 2,
+        action : handleProfileEdit
       },
       {
         id: "privacy",
         title: "Privacy",
         icon: "privacy-tip",
         flex: 2,
+        action : onPrivacyClicked
       },
     ],
   },
@@ -59,7 +63,7 @@ export const settingsConfig = [
         id: "theme",
         title: "Theme",
         icon: "invert-mode",
-        flex: 1,
+        flex: 1
       },
     ],
   },

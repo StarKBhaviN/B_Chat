@@ -168,6 +168,20 @@ export const AuthContextProvide = ({ children }) => {
     }
   };
 
+  const editProfile = async (updates) => {
+    try {
+      if (user?.userId) {
+        await updateDoc(doc(usersRef, user.userId), updates);
+        return "Profile Edit Successful.";
+      }
+      throw new Error("User not logged in.");
+    } catch (error) {
+      console.error("Error Editing Profile:", error);
+      return error.message;
+    }
+  };
+  
+
   return (
     <AuthContext.Provider
       value={{
@@ -175,6 +189,7 @@ export const AuthContextProvide = ({ children }) => {
         isAuthenticated,
         login,
         register,
+        editProfile,
         checkProfileNameAvailability,
         // signInWithGoogle,
         logout,

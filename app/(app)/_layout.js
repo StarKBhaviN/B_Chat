@@ -39,9 +39,7 @@ export default function _layout() {
       <Stack.Screen
         name="settings"
         options={{
-          header: () => (
-            <HomeHeader title="Settings" showProfile={false} showBack={true} />
-          ),
+          headerShown : false
         }}
       ></Stack.Screen>
       <Stack.Screen

@@ -40,7 +40,8 @@ export default function AddUser({ modalVisible, setModalVisible,addNewFriend }) 
         receiverId,
         reqMessage.trim() || "Heyy!!! Add me to have a Bee 👋😉"
       );
-      Alert.alert("Request Status", result);
+
+      Alert.alert(`Request Status : ${result.Success ? "Success" : "Failed"}`, result.Message);
       
       setReceiverName("");
       setReqMessage("");

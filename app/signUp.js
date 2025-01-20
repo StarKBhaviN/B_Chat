@@ -18,55 +18,30 @@ import { StatusBar } from "expo-status-bar";
 import { AntDesign, Entypo, MaterialIcons, Octicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import Loading from "../components/Loading";
-import CustomKeyboardView from "../components/CustomKeyboardView";
 import { useAuth } from "../context/authContext";
 import { SafeAreaView } from "react-native-safe-area-context";
-import * as ImagePicker from "expo-image-picker";
 
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { doc, setDoc } from "firebase/firestore";
-import { auth, db } from "../firebaseConfig";
 import axios from "axios";
 import { ThemeContext } from "../context/ThemeContext";
 import { Tooltip } from "react-native-elements";
+import { pickImage } from "../utils/common";
 
 export default function SignUp() {
   // Import theme context for using theme
-  const { colorScheme, setColorScheme, theme } = useContext(ThemeContext);
+  const { colorScheme, theme } = useContext(ThemeContext);
   const styles = createStyles(theme, colorScheme);
 
   const router = useRouter();
   const { register, checkProfileNameAvailability } = useAuth();
   const [loading, setLoading] = useState(false);
   const [image, setImage] = useState(null);
-  const [uploading, setUploading] = useState(false);
   const [showPass, setShowPass] = useState(false);
-  const [finalImage, setFinalImage] = useState("");
   const [isAvailable, setIsAvailable] = useState(null);
 
   const emailRef = useRef();
   const passRef = useRef();
   const bioRef = useRef();
   const userNameRef = useRef();
-
-  const pickImage = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== "granted") {
-      Alert.alert("Permission Denied", "Please allow access to your photos.");
-      return;
-    }
-
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 1,
-    });
-
-    if (!result.canceled) {
-      setImage(result.assets[0].uri);
-    }
-  };
 
   // Upload Image to Cloudinary
   const uploadImage = async () => {
@@ -79,11 +54,10 @@ export default function SignUp() {
     data.append("file", {
       uri: image,
       type: "image/*",
-      name: "profile.jpg",
+      name: `${userNameRef.current || "Unknown"}`,
     });
     data.append("upload_preset", "B_Chat"); // Replace with your Cloudinary preset
 
-    setUploading(true);
 
     try {
       const response = await axios.post(
@@ -97,13 +71,10 @@ export default function SignUp() {
       );
 
       const imageUrl = response.data.secure_url;
-      setFinalImage(imageUrl);
       return imageUrl;
     } catch (error) {
       console.error("Upload Error: ", error);
       Alert.alert("Upload Failed. Try again.");
-    } finally {
-      setUploading(false);
     }
   };
 
@@ -133,7 +104,7 @@ export default function SignUp() {
       passRef.current,
       userNameRef.current,
       uploadedImageUrl,
-      bioRef.current
+      bioRef.current || ""
     );
 
     setLoading(false);
@@ -160,7 +131,6 @@ export default function SignUp() {
     }
   };
 
-  console.log(isAvailable);
 
   return (
     <SafeAreaView className="flex-1" style={styles.safeContent}>
@@ -334,7 +304,7 @@ export default function SignUp() {
                     placeholder="Profile URL"
                     placeholderTextColor={"gray"}
                   /> */}
-                  <TouchableOpacity onPress={pickImage} className="flex-1">
+                  <TouchableOpacity onPress={() => pickImage(setImage)} className="flex-1">
                     <Text
                       style={{ fontSize: hp(2), color: theme.text }}
                       className="font-semibold text-neutral-700"

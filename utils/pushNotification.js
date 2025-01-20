@@ -30,11 +30,11 @@ export const sendPushNotification = async (
       body: JSON.stringify(message),
     });
 
-    if (!response.ok) {
-      console.error("Failed to send push notification:", response.statusText);
-    } else {
-      console.log("Push notification sent successfully");
-    }
+    // if (!response.ok) {
+    //   console.error("Failed to send push notification:", response.statusText);
+    // } else {
+    //   console.log("Push notification sent successfully");
+    // }
   } catch (error) {
     console.error("Error sending push notification:", error);
   }

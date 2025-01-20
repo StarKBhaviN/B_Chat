@@ -91,6 +91,7 @@ export default function beez() {
         >
           {/* Ahiya j flatList aavse ema announcement data moklvana */}
           <BeeRequest />
+          <Text>This feature is coming soon. Stay Tuned😊</Text>
         </ScrollView>
       </View>
     </View>
