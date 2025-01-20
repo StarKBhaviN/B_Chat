@@ -1,4 +1,4 @@
-import { handleProfileEdit, onPrivacyClicked } from "./settingActions";
+import { router } from "expo-router";
 
 export const settingsConfig = [
   {
@@ -12,8 +12,8 @@ export const settingsConfig = [
         flex: 4,
         backgroundColor: "#2f3a4b",
         textColor: "white",
-        flexDirection : "row",
-        marginTop : -1
+        flexDirection: "row",
+        marginTop: -1,
       },
     ],
   },
@@ -26,14 +26,14 @@ export const settingsConfig = [
         title: "Edit Profile",
         icon: "user",
         flex: 2,
-        action : handleProfileEdit
+        action: () => router.push("profile"),
       },
       {
         id: "privacy",
         title: "Privacy",
         icon: "privacy-tip",
         flex: 2,
-        action : onPrivacyClicked
+        action: () => router.push("/settings/privacy"),
       },
     ],
   },
@@ -46,12 +46,14 @@ export const settingsConfig = [
         title: "Verify Email",
         icon: "mail",
         flex: 1,
+        action: () => router.push("/settings/emailVerification"),
       },
       {
         id: "socials",
         title: "Socials",
         icon: "connect-without-contact",
         flex: 1,
+        action: () => router.push("/settings/socialScreen"),
       },
       {
         id: "sleep",
@@ -63,7 +65,7 @@ export const settingsConfig = [
         id: "theme",
         title: "Theme",
         icon: "invert-mode",
-        flex: 1
+        flex: 1,
       },
     ],
   },
@@ -76,12 +78,14 @@ export const settingsConfig = [
         title: "Notifications",
         icon: "bell-o",
         flex: 3,
+        action: () => router.push("/settings/notificationScreen"),
       },
       {
         id: "help",
         title: "Help",
         icon: "help-circle-outline",
         flex: 1,
+        action: () => router.push("/settings/helpScreen"),
       },
     ],
   },

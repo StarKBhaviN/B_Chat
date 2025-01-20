@@ -68,7 +68,7 @@ export default function AddUser({ modalVisible, setModalVisible,addNewFriend }) 
           <TextInput
             value={receiverName}
             onChangeText={(text) => setReceiverName(text)}
-            placeholder="Enter friend's profile"
+            placeholder="Enter Bee's profile"
             placeholderTextColor={theme.placeholder}
             style={[styles.input, { marginBottom: 10 }]}
           />
@@ -132,7 +132,7 @@ function createStyles(theme, colorScheme) {
     },
     title: {
       color: theme.glow,
-      fontSize: 20,
+      fontSize: 22,
       fontWeight: "bold",
       marginBottom: 15,
     },
@@ -153,17 +153,18 @@ function createStyles(theme, colorScheme) {
     },
     btnAdd: {
       backgroundColor: colorScheme === "dark" ? "#373d48" : theme.text,
-      padding: 15,
+      padding: 12,
       alignItems: "center",
-      width: 70,
+      width: 100,
     },
     btnCancel: {
-      width: 70,
+      width: 80,
+      padding : 11
     },
     txtAdd: {
       color: "white",
       fontWeight: "bold",
-      fontSize : 10
+      fontSize : 16
     },
     txtCancel: {
       textAlign: "center",

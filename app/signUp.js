@@ -54,7 +54,7 @@ export default function SignUp() {
     data.append("file", {
       uri: image,
       type: "image/*",
-      name: `${userNameRef.current || "Unknown"}`,
+      name: `${userNameRef.current || "Unknown"}.jpg`,
     });
     data.append("upload_preset", "B_Chat"); // Replace with your Cloudinary preset
 

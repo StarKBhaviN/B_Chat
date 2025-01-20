@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import {
   Feather,
@@ -12,6 +12,12 @@ import { ThemeContext } from "../../../context/ThemeContext";
 
 export default function settingsScreen({ navigation }) {
   const { theme, toggleThemeMode, colorScheme } = useContext(ThemeContext);
+
+  const [isSleepActive, setIsSleepActive] = useState(null);
+
+  const handleSleepToggle = () => {
+    setIsSleepActive((prevState) => !prevState);
+  };
 
   const IconMap = {
     "cookie-clock": MaterialCommunityIcons,
@@ -27,6 +33,8 @@ export default function settingsScreen({ navigation }) {
 
   const renderCol = (col) => {
     const Icon = IconMap[col.icon];
+    const isSleepButton = col.id === "sleep";
+
     return (
       <TouchableOpacity
         key={col.id}
@@ -34,15 +42,21 @@ export default function settingsScreen({ navigation }) {
           styles.col,
           {
             flex: col.flex,
-            backgroundColor: col.backgroundColor || theme.tint,
+            backgroundColor: isSleepButton
+              ? isSleepActive
+                ? theme.tint
+                : "#2f3a4b"
+              : col.backgroundColor || theme.tint,
             flexDirection: col.flexDirection || "column",
           },
         ]}
         onPress={() => {
-          if (col.route) navigation.navigate(col.route);
           if (col.action) col.action();
           if (col.id === "theme") {
             toggleThemeMode();
+          }
+          if (isSleepButton) {
+            handleSleepToggle();
           }
         }}
       >
@@ -50,11 +64,23 @@ export default function settingsScreen({ navigation }) {
         <Text
           style={{
             textAlign: "center",
-            color: col.textColor || theme.text,
+            color: isSleepButton
+              ? isSleepActive
+                ? theme.text
+                : "#c8c8c8"
+              : col.textColor || theme.text,
             marginTop: col.marginTop || 3,
           }}
         >
-          {col.id !== "theme" ? col.title : colorScheme==="light" ? "Dark" : "Light"}
+          {isSleepButton
+            ? isSleepActive
+              ? "Sleep"
+              : "Wake"
+            : col.id !== "theme"
+            ? col.title
+            : colorScheme === "light"
+            ? "Dark"
+            : "Light"}
         </Text>
       </TouchableOpacity>
     );
@@ -67,6 +93,7 @@ export default function settingsScreen({ navigation }) {
   );
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
+      <Text className="text-center mb-2" style={{color : theme.text}}>All the settings are under development. Stay Tuned 😊</Text>
       {settingsConfig.map(renderRow)}
     </View>
   );

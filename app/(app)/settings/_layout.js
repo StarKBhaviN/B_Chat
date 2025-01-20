@@ -6,7 +6,7 @@ export default function SettingsLayout() {
   return (
     <Stack>
       <Stack.Screen
-        name="index" // Corresponds to settings/index.js
+        name="index"
         options={{
           header: () => (
             <HomeHeader title="Settings" showProfile={false} showBack={true} />
@@ -14,7 +14,7 @@ export default function SettingsLayout() {
         }}
       />
       <Stack.Screen
-        name="notificationScreen" // Corresponds to settings/notifications.js
+        name="notificationScreen"
         options={{
           header: () => (
             <HomeHeader
@@ -22,6 +22,42 @@ export default function SettingsLayout() {
               showProfile={false}
               showBack={true}
             />
+          ),
+        }}
+      />
+      <Stack.Screen
+        name="privacy"
+        options={{
+          header: () => (
+            <HomeHeader title="Privacy" showProfile={false} showBack={true} />
+          ),
+        }}
+      />
+      <Stack.Screen
+        name="emailVerification"
+        options={{
+          header: () => (
+            <HomeHeader
+              title="Verify Email"
+              showProfile={false}
+              showBack={true}
+            />
+          ),
+        }}
+      />
+      <Stack.Screen
+        name="helpScreen"
+        options={{
+          header: () => (
+            <HomeHeader title="Help" showProfile={false} showBack={true} />
+          ),
+        }}
+      />
+      <Stack.Screen
+        name="socialScreen"
+        options={{
+          header: () => (
+            <HomeHeader title="Socials" showProfile={false} showBack={true} />
           ),
         }}
       />

@@ -12,6 +12,9 @@ import { usersRef } from "../../firebaseConfig";
 import { ThemeContext } from "../../context/ThemeContext";
 import { AntDesign, FontAwesome, FontAwesome6 } from "@expo/vector-icons";
 import ProfileEditModal from "../../components/ProfileEditModal";
+import { pickImage } from "../../utils/common";
+import axios from "axios";
+import { Avatar } from "react-native-elements";
 
 export default function Profile() {
   const { theme, colorScheme } = useContext(ThemeContext);
@@ -22,6 +25,10 @@ export default function Profile() {
 
   const [showEditModal, setShowEditModal] = useState(false);
   const [fieldName, setFieldName] = useState("");
+  const [newImage, setNewImage] = useState(null);
+  const [showConfirmationModal, setShowConfirmationModal] = useState(false);
+  const [loading, setLoading] = useState(false);
+  
   // Fetch the latest user data from Firebase when the user context changes
   const fetchUserData = async () => {
     try {
@@ -42,8 +49,39 @@ export default function Profile() {
     }
   }, [user]); // Trigger the effect whenever the user context changes
 
-  const handlePickImage = () => {
-    console.log("handle pick image");
+  const handleChangeImage = async () => {
+    await pickImage(setNewImage);
+    
+    try {
+      setLoading(true);
+  
+      const data = new FormData();
+      data.append("file", {
+        uri: newImage,
+        type: "image/*",
+        name: `${user?.profileName || "Unknown"}.jpg`,
+      });
+      data.append("upload_preset", "B_Chat");
+      const resp = await axios.post(
+        "https://api.cloudinary.com/v1_1/dzjyqifhh/image/upload",
+        data,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      const imageUrl = resp.data.secure_url;
+      console.log(imageUrl)
+      await editProfile({ profileURL: imageUrl });
+      fetchUserData();
+      setLoading(false)
+      return imageUrl;
+    } catch (error) {
+      console.error("Upload Error: ", error.message);
+      Alert.alert("Upload Failed. Try again.");
+    }
   };
 
   const openNameEditModal = () => {
@@ -56,6 +94,7 @@ export default function Profile() {
     setShowEditModal(true);
   };
 
+  console.log(loading)
   return (
     <View style={styles.container}>
       <View style={styles.profileCard}>
@@ -64,17 +103,32 @@ export default function Profile() {
 
         {/* Profile Image */}
         <View style={styles.profileImageContainer}>
-          <Image
-            source={{ uri: userData?.profileURL }}
-            style={styles.profileImage}
-          />
+          {loading ? (
+            <Avatar
+              style={styles.profileImage}
+              rounded
+              title="FC"
+              containerStyle={{ backgroundColor: "#3d4db7" }}
+            />
+          ) : (
+            <Image
+              source={{ uri: userData?.profileURL }}
+              style={styles.profileImage}
+            />
+          )}
+
           <AntDesign
-            onPress={handlePickImage}
+            onPress={handleChangeImage}
             name="picture"
             size={22}
-            color={"rgb(197, 196, 196)"}
-            className="bg-[#2f3a4b] p-2 rounded-full"
-            style={{ position: "absolute", bottom: 0, right: 0 }}
+            color={theme.glow}
+            className="p-2 rounded-full"
+            style={{
+              position: "absolute",
+              bottom: 0,
+              right: 0,
+              backgroundColor: colorScheme === "dark" ? "#092635" : "#FAF0E6",
+            }}
           />
         </View>
 
@@ -175,6 +229,7 @@ function createStyles(theme, colorScheme) {
       width: hp(17),
       borderRadius: 100,
       resizeMode: "cover",
+      backgroundColor : colorScheme==="dark" ? "rgb(88, 88, 88)" : "rgb(119, 119, 119)"
     },
     profileName: {
       fontSize: 24,
