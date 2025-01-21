@@ -13,7 +13,7 @@ import { ThemeContext } from "../context/ThemeContext";
 import { useFriendContext } from "../context/friendContext";
 import { getReceiverIdByProfileName } from "../utils/friendService";
 
-export default function AddUser({ modalVisible, setModalVisible,addNewFriend }) {
+export default function AddUser({ modalVisible, setModalVisible }) {
   const { theme, colorScheme } = useContext(ThemeContext);
   const styles = createStyles(theme, colorScheme);
 

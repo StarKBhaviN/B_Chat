@@ -178,6 +178,8 @@ export default function Home() {
       return bTime - aTime;
     });
   }, [users]);
+  
+  
 
   return (
     <View className="flex-1" style={{ backgroundColor: theme.background }}>
@@ -202,7 +204,6 @@ export default function Home() {
       <AddUser
         modalVisible={showModal}
         setModalVisible={setShowModal}
-        addNewFriend={addNewUser}
       />
     </View>
   );
