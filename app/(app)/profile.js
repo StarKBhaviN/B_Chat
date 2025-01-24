@@ -16,45 +16,47 @@ import { pickImage } from "../../utils/common";
 import axios from "axios";
 import { Avatar } from "react-native-elements";
 
-export default function Profile() {
+export default function Profile({ externalUserData, userId }) {
   const { theme, colorScheme } = useContext(ThemeContext);
+  const { user, editProfile } = useAuth();
   const styles = createStyles(theme, colorScheme);
 
-  const { user, editProfile } = useAuth(); // Using user data from AuthContext
-  const [userData, setUserData] = useState(user); // Store user data separately
-
+  const [userData, setUserData] = useState(externalUserData || user); // Store user data separately
   const [showEditModal, setShowEditModal] = useState(false);
   const [fieldName, setFieldName] = useState("");
   const [newImage, setNewImage] = useState(null);
-  const [showConfirmationModal, setShowConfirmationModal] = useState(false);
   const [loading, setLoading] = useState(false);
-  
-  // Fetch the latest user data from Firebase when the user context changes
+
+  const isOwnProfile =
+    !externalUserData || externalUserData?.userId === user?.userId;
+
   const fetchUserData = async () => {
     try {
-      const userDoc = await getDoc(doc(usersRef, user?.userId));
+      const userDoc = await getDoc(doc(usersRef, userId || user?.userId));
       if (userDoc.exists()) {
-        const data = userDoc.data();
-        setUserData(data); // Update the userData state with the fetched data
+        setUserData(userDoc.data());
+      } else {
+        console.error("User not found");
       }
     } catch (error) {
-      console.error("Error fetching user data: ", error);
+      console.error("Error fetching user data:", error);
     }
   };
 
-  // Fetch updated user data when the user context changes
   useEffect(() => {
-    if (user?.userId) {
+    if (externalUserData) {
+      setUserData(externalUserData);
+    } else {
       fetchUserData();
     }
-  }, [user]); // Trigger the effect whenever the user context changes
+  }, [externalUserData]);
 
   const handleChangeImage = async () => {
     await pickImage(setNewImage);
-    
+
     try {
       setLoading(true);
-  
+
       const data = new FormData();
       data.append("file", {
         uri: newImage,
@@ -73,28 +75,24 @@ export default function Profile() {
       );
 
       const imageUrl = resp.data.secure_url;
-      console.log(imageUrl)
+      console.log(imageUrl);
       await editProfile({ profileURL: imageUrl });
+      setUserData((prev) => ({ ...prev, profileURL: imageUrl }));
       fetchUserData();
-      setLoading(false)
+      setLoading(false);
       return imageUrl;
     } catch (error) {
       console.error("Upload Error: ", error.message);
       Alert.alert("Upload Failed. Try again.");
+      setLoading(false);
     }
   };
 
-  const openNameEditModal = () => {
-    setFieldName("Name");
+  const openEditModal = (field) => {
+    setFieldName(field);
     setShowEditModal(true);
   };
 
-  const openBioEditModal = () => {
-    setFieldName("Bio");
-    setShowEditModal(true);
-  };
-
-  console.log(loading)
   return (
     <View style={styles.container}>
       <View style={styles.profileCard}>
@@ -116,20 +114,21 @@ export default function Profile() {
               style={styles.profileImage}
             />
           )}
-
-          <AntDesign
-            onPress={handleChangeImage}
-            name="picture"
-            size={22}
-            color={theme.glow}
-            className="p-2 rounded-full"
-            style={{
-              position: "absolute",
-              bottom: 0,
-              right: 0,
-              backgroundColor: colorScheme === "dark" ? "#092635" : "#FAF0E6",
-            }}
-          />
+          {isOwnProfile && (
+            <AntDesign
+              onPress={handleChangeImage}
+              name="picture"
+              size={22}
+              color={theme.glow}
+              className="p-2 rounded-full"
+              style={{
+                position: "absolute",
+                bottom: 0,
+                right: 0,
+                backgroundColor: colorScheme === "dark" ? "#092635" : "#FAF0E6",
+              }}
+            />
+          )}
         </View>
 
         {/* Profile Name */}
@@ -145,15 +144,18 @@ export default function Profile() {
               <Text style={[styles.bioText]}>
                 {userData?.profileName || "No Name"}
               </Text>
-              <FontAwesome6
-                onPress={openNameEditModal}
-                name="pencil"
-                size={15}
-                color={theme.icon}
-              />
+              {isOwnProfile && (
+                <FontAwesome6
+                  onPress={() => openEditModal("Name")}
+                  name="pencil"
+                  size={15}
+                  color={theme.icon}
+                />
+              )}
             </View>
           </View>
         </View>
+        {/* This is only modal */}
         <View>
           <ProfileEditModal
             showEditModal={showEditModal}
@@ -175,13 +177,15 @@ export default function Profile() {
               <Text style={styles.bioText}>
                 {userData?.bio || "Add about yourself for Beez."}
               </Text>
-              <FontAwesome
-                onPress={openBioEditModal}
-                className="mb-1"
-                name="pencil-square-o"
-                size={18}
-                color={theme.icon}
-              />
+              {isOwnProfile && (
+                <FontAwesome
+                  onPress={() => openEditModal("Bio")}
+                  className="mb-1"
+                  name="pencil-square-o"
+                  size={18}
+                  color={theme.icon}
+                />
+              )}
             </View>
           </View>
         </View>
@@ -229,7 +233,8 @@ function createStyles(theme, colorScheme) {
       width: hp(17),
       borderRadius: 100,
       resizeMode: "cover",
-      backgroundColor : colorScheme==="dark" ? "rgb(88, 88, 88)" : "rgb(119, 119, 119)"
+      backgroundColor:
+        colorScheme === "dark" ? "rgb(88, 88, 88)" : "rgb(119, 119, 119)",
     },
     profileName: {
       fontSize: 24,

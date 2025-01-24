@@ -29,7 +29,7 @@ export default function _layout() {
         }}
       ></Stack.Screen>
       <Stack.Screen
-        name="profile"
+        name="[userId]"
         options={{
           header: () => (
             <HomeHeader title="Profile" showProfile={false} showBack={true} />

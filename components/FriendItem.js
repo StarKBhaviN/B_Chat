@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet, Pressable } from "react-native";
-import React, { useContext } from "react";
+import React, { useCallback, useContext, useRef, useState } from "react";
 import { ThemeContext } from "../context/ThemeContext";
 import { Image } from "expo-image";
 import {
@@ -17,7 +17,6 @@ import { useRouter } from "expo-router";
 
 export default function FriendItem({ item, removeAsFriend }) {
   const router = useRouter();
-
   const { theme } = useContext(ThemeContext);
   const styles = createStyles(theme);
 
@@ -26,6 +25,14 @@ export default function FriendItem({ item, removeAsFriend }) {
 
   const openChatRoom = () => {
     router.push({ pathname: "/chatRoom", params: item });
+  };
+
+  const openProfile = (userId) => {
+    router.push(`${userId}`);
+  };
+
+  const openBottomSheet = () => {
+    console.log("Open bottom sheets");
   };
   return (
     <View
@@ -58,11 +65,19 @@ export default function FriendItem({ item, removeAsFriend }) {
 
         <View style={styles.iconContainer}>
           <View className="flex flex-row mb-2">
-            <Pressable className="rounded-lg mx-1" style={styles.smallIcon}>
+            <Pressable
+              className="rounded-lg mx-1"
+              style={styles.smallIcon}
+              onPress={() => openProfile(item.userId)}
+            >
               <FontAwesome5 name="forumbee" size={15} color={theme.icon} />
             </Pressable>
 
-            <Pressable className="rounded-lg mx-1" style={styles.smallIcon} onPress={openChatRoom}>
+            <Pressable
+              className="rounded-lg mx-1"
+              style={styles.smallIcon}
+              onPress={openChatRoom}
+            >
               <Ionicons
                 name="chatbubble-ellipses-outline"
                 size={15}
@@ -75,6 +90,7 @@ export default function FriendItem({ item, removeAsFriend }) {
             <Pressable
               className="flex-1 flex-row items-center justify-center rounded-lg mx-1 border py-1"
               style={{ borderColor: theme.border }}
+              onPress={openBottomSheet}
             >
               <Feather name="send" size={14} color={theme.icon} />
               <Text className="ms-2" style={{ color: theme.text }}>
