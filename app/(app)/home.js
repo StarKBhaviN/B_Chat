@@ -57,10 +57,6 @@ export default function Home() {
   const unsubscribeUser = useRef(null);
   const dataFetched = useRef(false); // Flag to track if data is already fetched
 
-  const addNewUser = (newFriend) => {
-    setUsers((prevUsers) => [...prevUsers, newFriend]);
-  };
-
   const fetchInitialUsers = async () => {
     if (!user?.userId || dataFetched.current) return;
 
@@ -120,8 +116,8 @@ export default function Home() {
     );
 
     setUsers(usersWithLastMessage);
-    dataFetched.current = true; // Mark data as fetched
     setLoading(false);
+    dataFetched.current = true;
   };
 
   const listenToFriendStatus = (friendIds) => {
@@ -191,7 +187,7 @@ export default function Home() {
       ) : sortedUsers.length > 0 ? (
         <ChatList currentUser={user} users={sortedUsers} />
       ) : (
-        <Text className="text-center mt-10">No Beez available</Text>
+        <Text style={{color : theme.text}} className="text-center text-xl mt-4">No Beez available</Text>
       )}
 
       <TouchableOpacity

@@ -8,6 +8,7 @@ import {
   query,
   where,
   onSnapshot,
+  deleteDoc,
 } from "firebase/firestore";
 import { usersRef } from "../firebaseConfig";
 import { sendPushNotification } from "./pushNotification";
@@ -36,10 +37,10 @@ export async function getReceiverIdByProfileName(profileName) {
 export const sendFriendRequest = async (senderId, receiverId, message) => {
   try {
     if (!senderId) {
-      return {Success : false , Message : "Invalid sender or receiver ID."};
+      return { Success: false, Message: "Invalid sender or receiver ID." };
     }
     if (!receiverId) {
-      return {Success : false , Message : "Bee User not found."};
+      return { Success: false, Message: "Bee User not found." };
     }
 
     const senderDocRef = doc(usersRef, senderId);
@@ -58,7 +59,7 @@ export const sendFriendRequest = async (senderId, receiverId, message) => {
 
     // Check if the sender is already a friend or has sent a request
     if (friends.includes(senderId)) {
-      return {Success : false , Message : "You are already connected."};
+      return { Success: false, Message: "You are already connected." };
     }
 
     // Check if a friend request has already been sent
@@ -67,9 +68,9 @@ export const sendFriendRequest = async (senderId, receiverId, message) => {
     );
 
     if (isAlreadyRequested) {
-      return {Success : false , Message : "Friend request already sent."};
+      return { Success: false, Message: "Friend request already sent." };
     }
-    
+
     // Add senderId to the receiver's friendRequests array
     await updateDoc(receiverDocRef, {
       friendReqs: arrayUnion({
@@ -205,5 +206,32 @@ export const deleteFrndReqs = async (userId, incomingId) => {
   } catch (error) {
     console.error("Error rejecting friend request:", error);
     return "Failed to reject friend request.";
+  }
+};
+
+// Friend Mangement
+
+export const removeFromFriend = async (userId, friendId) => {
+  try {
+    const userDocRef = doc(usersRef, userId);
+    const friendDocRef = doc(usersRef, friendId);
+
+    // Fetch the user document
+    const userDoc = await getDoc(userDocRef);
+    const friendDoc = await getDoc(friendDocRef);
+
+    if (userDoc.exists() && friendDoc.exists()) {
+      await updateDoc(userDocRef, {
+        friends: arrayRemove(friendId),
+      });
+      await updateDoc(friendDocRef, {
+        friends: arrayRemove(userId),
+      });
+    }
+
+    return "Removed from Friends.";
+  } catch (error) {
+    console.error("Error Removing friend :", error);
+    return "Failed to Remove From Friends.";
   }
 };

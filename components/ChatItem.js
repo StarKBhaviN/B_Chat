@@ -21,8 +21,11 @@ import {
 import { db } from "../firebaseConfig";
 import { Badge } from "react-native-elements";
 import { ThemeContext } from "../context/ThemeContext";
+import { useRouter } from "expo-router";
 
-export default function ChatItem({ item, router, noBorder, currentUser }) {
+export default function ChatItem({ item, noBorder, currentUser }) {
+  const router = useRouter();
+
   const { theme, colorScheme } = useContext(ThemeContext);
   const [lastMessage, setLastMessage] = useState(undefined);
   const [unreadCount, setUnreadCount] = useState(0);

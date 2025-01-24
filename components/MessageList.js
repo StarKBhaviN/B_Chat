@@ -56,7 +56,7 @@ export default function MessageList({
       keyboardShouldPersistTaps="handled"
       contentContainerStyle={{ paddingTop: 10 }}
       onContentSizeChange={() =>
-        scrollViewRef?.current?.scrollToEnd({ animated: true })
+        scrollViewRef?.current?.scrollToEnd({ animated: false })
       }
     >
       {messages.map((message, index) => {

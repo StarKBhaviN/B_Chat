@@ -1,14 +1,9 @@
 import { View, Text, FlatList } from "react-native";
 import React from "react";
 import ChatItem from "./ChatItem";
-import { useRouter } from "expo-router";
 import Animated, { LinearTransition, SequencedTransition } from "react-native-reanimated";
 
 export default function ChatList({ users, currentUser }) {
-  const router = useRouter();
-  // users.map((na) => {
-  //   console.log(na.status)
-  // })
   return (
     <View className="flex-1">
       <Animated.FlatList
@@ -22,7 +17,6 @@ export default function ChatList({ users, currentUser }) {
             currentUser={currentUser}
             noBorder={index + 1 === users.length}
             item={item}
-            router={router}
             index={index}
           />
         )}
