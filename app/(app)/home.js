@@ -37,6 +37,8 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import AddUser from "../../components/AddUser";
 import { getRoomID } from "../../utils/common";
 import { ThemeContext } from "../../context/ThemeContext";
+import { Image } from "expo-image";
+import HelloBee from "../../assets/images/HelloBee.png"
 // import { useNotification } from "../../context/NotificationContext";
 
 export default function Home() {
@@ -174,8 +176,6 @@ export default function Home() {
       return bTime - aTime;
     });
   }, [users]);
-  
-  
 
   return (
     <View className="flex-1" style={{ backgroundColor: theme.background }}>
@@ -187,7 +187,18 @@ export default function Home() {
       ) : sortedUsers.length > 0 ? (
         <ChatList currentUser={user} users={sortedUsers} />
       ) : (
-        <Text style={{color : theme.text}} className="text-center text-xl mt-4">No Beez available</Text>
+        <View style={styles.notFound}>
+          <Image
+            source={HelloBee}
+            style={{ width: 200, height: 200, marginBottom: 10 }}
+          />
+          <Text
+            className="text-xl text-center w-80"
+            style={{ color: theme.text }}
+          >
+            No Friend Beez. Add Bee👋
+          </Text>
+        </View>
       )}
 
       <TouchableOpacity
@@ -197,10 +208,7 @@ export default function Home() {
         <MaterialCommunityIcons name="plus" size={hp(4)} color="#fff" />
       </TouchableOpacity>
 
-      <AddUser
-        modalVisible={showModal}
-        setModalVisible={setShowModal}
-      />
+      <AddUser modalVisible={showModal} setModalVisible={setShowModal} />
     </View>
   );
 }
@@ -218,6 +226,12 @@ function createStyles(theme, colorScheme) {
       justifyContent: "center",
       alignItems: "center",
       elevation: 5,
+    },
+    notFound: {
+      flex: 1,
+      alignItems: "center",
+      justifyContent: "flex-start",
+      paddingVertical: 20,
     },
   });
 }

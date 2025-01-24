@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet } from "react-native";
-import React, { useContext, useEffect } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
@@ -12,10 +12,24 @@ export default function socialScreen() {
   const { theme } = useContext(ThemeContext);
   const styles = createStyles(theme);
 
-  
+  const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 300); // Delay in milliseconds
+
+    return () => clearTimeout(handler); // Cleanup timeout on unmount or re-typing
+  }, [searchTerm]);
+
   return (
     <View style={styles.container}>
       <SearchBar
+        key="search-bar"
+        placeholder="Search for Beez by Name..."
+        placeholderTextColor={theme.placeholder}
+        onChangeText={(text) => setSearchTerm(text)}
         containerStyle={{
           height: 50,
           backgroundColor: "transparent",
@@ -26,12 +40,17 @@ export default function socialScreen() {
         }}
         inputContainerStyle={{
           padding: 0,
-          height: 20,
+          height: 30,
           backgroundColor: theme.tint,
         }}
-        // ref={}
+        inputStyle={{
+          color: theme.glow,
+          fontSize: 15,
+        }}
+        value={searchTerm}
+        // ref={searchRef}
       />
-      <FriendList />
+      <FriendList searchTerm={searchTerm} />
     </View>
   );
 }

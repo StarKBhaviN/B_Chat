@@ -138,7 +138,7 @@ function createStyles(theme) {
       paddingVertical: 4,
       alignItems: "center",
       justifyContent: "center",
-      borderRadius: 8,
+      borderRadius: 6,
       borderTopLeftRadius: 0,
       borderTopRightRadius: 0,
     },

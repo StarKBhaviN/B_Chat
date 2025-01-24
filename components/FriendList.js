@@ -1,15 +1,56 @@
-import { ScrollView, View } from "react-native";
-import React, { useEffect } from "react";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
+import React, { useContext, useEffect } from "react";
 import FriendItem from "./FriendItem";
 import { useFriendContext } from "../context/friendContext";
+import { ThemeContext } from "../context/ThemeContext";
+import { Image } from "expo-image";
+import BeePNG from "../assets/images/BeePNG.png";
 
-export default function FriendList() {
-  const { fetchAllFriends, getAllFriendData, removeAsFriend } = useFriendContext();
+export default function FriendList({ searchTerm }) {
+  const { theme } = useContext(ThemeContext);
+  const { fetchAllFriends, getAllFriendData, removeAsFriend } =
+    useFriendContext();
 
   useEffect(() => {
-    console.log("Running this")
     getAllFriendData();
-  }, [removeAsFriend]);
+  }, []);
+
+  const filteredFriends = fetchAllFriends.filter((friend) =>
+    friend.profileName.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  // Determine the time of day
+  const getTimeOfDay = () => {
+    const hour = new Date().getHours();
+    if (hour >= 5 && hour < 12) {
+      return "Snacks";
+    } else if (hour >= 12 && hour < 14) {
+      return "Lunch";
+    } else if (hour >= 14 && hour < 19) {
+      return "At the Garden";
+    } else {
+      return "Dinner";
+    }
+  };
+
+  const timeOfDay = getTimeOfDay();
+
+  if (filteredFriends.length === 0) {
+    return (
+      <View style={styles.notFound}>
+        <Image
+          source={BeePNG}
+          style={{ width: 100, height: 100, marginBottom: 20 }}
+        />
+        <Text
+          className="text-xl text-center w-80"
+          style={{ color: theme.text }}
+        >
+          Your Favourite Bee is Enjoying {timeOfDay}. 🐝
+        </Text>
+      </View>
+    );
+  }
 
   return (
     <ScrollView
@@ -25,10 +66,24 @@ export default function FriendList() {
         flex: 1,
       }}
     >
-      {fetchAllFriends.map((item, index) => {
-        console.log(item.profileName)
-        return <FriendItem key={index} item={item} removeAsFriend={removeAsFriend}/>;
+      {filteredFriends.map((item, index) => {
+        return (
+            <FriendItem
+              key={index}
+              item={item}
+              removeAsFriend={removeAsFriend}
+            />
+        );
       })}
     </ScrollView>
   );
 }
+
+const styles = StyleSheet.create({
+  notFound: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "flex-start",
+    paddingVertical: 30,
+  },
+});

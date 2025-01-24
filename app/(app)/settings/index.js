@@ -9,16 +9,18 @@ import {
 } from "@expo/vector-icons";
 import { settingsConfig } from "../../../utils/settingConfigs";
 import { ThemeContext } from "../../../context/ThemeContext";
+import ModalTimeUsed from "../../../components/ModalTimeUsed";
 
 export default function settingsScreen({ navigation }) {
   const { theme, toggleThemeMode, colorScheme } = useContext(ThemeContext);
 
   const [isSleepActive, setIsSleepActive] = useState(null);
-
+  const [showUseageModal, setShowUsageModal] = useState(false);
   const handleSleepToggle = () => {
     setIsSleepActive((prevState) => !prevState);
   };
 
+  console.log(showUseageModal)
   const IconMap = {
     "cookie-clock": MaterialCommunityIcons,
     user: Feather,
@@ -51,6 +53,10 @@ export default function settingsScreen({ navigation }) {
           },
         ]}
         onPress={() => {
+          if (col.id === "usedToday") {
+            console.log("Opening modal")
+            setShowUsageModal(true)
+          }
           if (col.action) col.action();
           if (col.id === "theme") {
             toggleThemeMode();
@@ -93,8 +99,12 @@ export default function settingsScreen({ navigation }) {
   );
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
-      <Text className="text-center mb-2" style={{color : theme.text}}>All the settings are under development. Stay Tuned 😊</Text>
+      <Text className="text-center mb-2" style={{ color: theme.text }}>
+        All the settings are under development. Stay Tuned 😊
+      </Text>
       {settingsConfig.map(renderRow)}
+
+      <ModalTimeUsed setModalVisible={setShowUsageModal} modalVisible={showUseageModal} />
     </View>
   );
 }
