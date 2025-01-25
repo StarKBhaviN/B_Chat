@@ -91,7 +91,7 @@ export default function ModalTimeUsed({ modalVisible, setModalVisible }) {
             <View>
               <View className="flex flex-row items-center mb-4">
                 <TextInput
-                  value="1"
+                  value="90"
                   className="flex-1 border-b py-1 "
                   style={{ borderColor: theme.border, color: theme.text }}
                 />

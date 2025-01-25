@@ -53,7 +53,7 @@ export default function settingsScreen({ navigation }) {
         ]}
         onPress={() => {
           if (col.id === "usedToday") {
-            setShowUsageModal(true)
+            setShowUsageModal(true);
           }
           if (col.action) col.action();
           if (col.id === "theme") {
@@ -97,12 +97,12 @@ export default function settingsScreen({ navigation }) {
   );
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
-      <Text className="text-center mb-2" style={{ color: theme.text }}>
-        All the settings are under development. Stay Tuned 😊
-      </Text>
       {settingsConfig.map(renderRow)}
 
-      <ModalTimeUsed setModalVisible={setShowUsageModal} modalVisible={showUseageModal} />
+      <ModalTimeUsed
+        setModalVisible={setShowUsageModal}
+        modalVisible={showUseageModal}
+      />
     </View>
   );
 }

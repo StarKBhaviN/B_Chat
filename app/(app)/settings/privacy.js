@@ -1,10 +1,36 @@
-import { View, Text } from "react-native";
-import React from "react";
+import { View, Text, StyleSheet } from "react-native";
+import React, { useContext } from "react";
+import { ThemeContext } from "../../../context/ThemeContext";
+import {
+  widthPercentageToDP as wp,
+  heightPercentageToDP as hp,
+} from "react-native-responsive-screen";
 
-export default function privacy() {
+export default function Privacy() {
+  const { theme } = useContext(ThemeContext);
+  const styles = createStyles(theme);
+
   return (
-    <View>
-      <Text>privacy</Text>
+    <View style={styles.container}>
+      <View className="flex flex-row items-center">
+        <Text style={styles.heading}>Who can see online status?</Text>
+        <Text style={styles.heading}> Everyone</Text>
+      </View>
     </View>
   );
+}
+
+function createStyles(theme) {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      padding: 12,
+      paddingHorizontal: 16,
+      backgroundColor: theme.background,
+    },
+    heading: {
+      fontSize: 16,
+      color: theme.glow,
+    },
+  });
 }

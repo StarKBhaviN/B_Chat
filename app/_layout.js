@@ -24,11 +24,10 @@ Notifications.setNotificationHandler({
 });
 
 const MainLayout = () => {
-  const { isAuthenticated } = useAuth();
+  const { user, isAuthenticated } = useAuth();
+  
   const segments = useSegments();
-
   const appState = useRef(AppState.currentState);
-  const { user } = useAuth();
 
   const [startTime, setStartTime] = useState(null);
   const [elapsedTime, setElapsedTime] = useState(0); // Time spent today in milliseconds
@@ -73,12 +72,13 @@ const MainLayout = () => {
 
     return () => subscription.remove();
   }, []);
+
   // Start timer when app is active
-  const startTimer = () => {
+  const startTimer = async () => {
     setStartTime(Date.now());
     setTimerRunning(true);
   };
-
+  
   // Stop timer and save to AsyncStorage
   const stopTimer = async () => {
     if (startTime) {
@@ -89,6 +89,7 @@ const MainLayout = () => {
     }
     setTimerRunning(false);
   };
+
   // App state change online/offline
   useEffect(() => {
     const handleAppStateChange = async (nextAppState) => {
@@ -103,7 +104,7 @@ const MainLayout = () => {
               lastSeen: serverTimestamp(),
               activeRoom: null,
             });
-            // Stop the timer when app goes to background
+
             stopTimer();
           } else if (nextAppState === "active") {
             // Update Firestore on foreground
@@ -111,7 +112,7 @@ const MainLayout = () => {
               status: "online",
               lastSeen: "online",
             });
-            // Start the timer when app comes to foreground
+
             startTimer();
           }
         } catch (error) {

@@ -22,7 +22,7 @@ export default function helpScreen() {
   const { showAlert } = useAlert();
   const handleHelpSend = async () => {
     if (!helpText) {
-      showAlert('Verification Sent', 'A verification email has been sent to your email address.');
+      showAlert('Help', 'You must fill all the details.');
       return;
     } else {
       showAlert('Help', 'Feature coming soon.');
