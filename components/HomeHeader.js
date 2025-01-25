@@ -158,7 +158,7 @@ export default function HomeHeader({
 function createStyles(theme, colorScheme) {
   return StyleSheet.create({
     headerLayout: {
-      backgroundColor: theme.appBg, // indigo-400
+      backgroundColor: theme.appBg, 
     },
     header: {
       display: "flex",
@@ -166,7 +166,7 @@ function createStyles(theme, colorScheme) {
       justifyContent: "space-between",
       alignItems: "center",
       paddingHorizontal: 20,
-      backgroundColor: "#2f3a4b", // indigo-400
+      backgroundColor: "#2f3a4b", 
       paddingBottom: 4,
       borderBottomLeftRadius: 24,
       borderBottomRightRadius: 24,

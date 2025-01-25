@@ -15,6 +15,7 @@ import {
 } from "firebase/auth";
 import { auth } from "../firebaseConfig";
 import { ThemeContext } from "../context/ThemeContext";
+import { useAlert } from "../context/alertContext";
 
 export default function ForgotPassword({ setModalVisible, modalVisible }) {
   const [email, setEmail] = useState("");
@@ -22,12 +23,14 @@ export default function ForgotPassword({ setModalVisible, modalVisible }) {
   const { theme, colorScheme } = useContext(ThemeContext);
   const styles = createStyles(theme, colorScheme);
   
+  const {showAlert} = useAlert()
+  
   const handlePasswordReset = async () => {
     const trimmedEmail = email.trim();
     console.log(trimmedEmail);
 
     if (trimmedEmail === "") {
-      Alert.alert("Forgot Password", "Enter your email");
+      showAlert("Forgot Password", "Enter your email");
       return;
     }
 
@@ -45,10 +48,10 @@ export default function ForgotPassword({ setModalVisible, modalVisible }) {
       if (signInMethods.length > 0) {
         // Send the password reset email if the user exists
         await sendPasswordResetEmail(auth, trimmedEmail);
-        Alert.alert("Success", "Password reset email sent!");
+        showAlert("Success", "Password reset email sent!");
         setModalVisible(false);
       } else {
-        Alert.alert(
+        showAlert(
           "Error",
           "We are unable to find a user with this email for B_Chat App"
         );
@@ -56,7 +59,7 @@ export default function ForgotPassword({ setModalVisible, modalVisible }) {
       }
     } catch (error) {
       console.error("Error resetting password:", error);
-      Alert.alert("Error", error.message);
+      showAlert("Error", error.message);
     }
   };
 

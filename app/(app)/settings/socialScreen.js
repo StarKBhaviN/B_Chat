@@ -50,7 +50,7 @@ export default function socialScreen() {
         value={searchTerm}
         // ref={searchRef}
       />
-      <FriendList searchTerm={searchTerm} />
+      <FriendList searchTerm={debouncedSearchTerm} />
     </View>
   );
 }

@@ -69,7 +69,7 @@ export default function FriendList({ searchTerm }) {
       {filteredFriends.map((item, index) => {
         return (
             <FriendItem
-              key={index}
+              key={item.userId}
               item={item}
               removeAsFriend={removeAsFriend}
             />

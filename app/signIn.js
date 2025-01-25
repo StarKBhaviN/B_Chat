@@ -27,6 +27,7 @@ import ForgotPassword from "../components/ForgotPassword";
 import PhoneSignIn from "../components/PhoneSignIn.js";
 import CustomKeyboardView from "../components/CustomKeyboardView.js";
 import { ThemeContext } from "../context/ThemeContext.js";
+import { useAlert } from "../context/alertContext.js";
 
 export default function SignIn() {
   // Import theme context for using theme
@@ -35,6 +36,7 @@ export default function SignIn() {
 
   const router = useRouter();
   const { login } = useAuth();
+  const { showAlert } = useAlert();
 
   const [modalVisible, setModalVisible] = useState(false);
   const [phonemodalVisible, setPhoneModalVisible] = useState(false);
@@ -53,7 +55,7 @@ export default function SignIn() {
 
   const handleLogin = async () => {
     if (!emailRef.current || !passRef.current) {
-      Alert.alert("Sign In", "Please fill all the fields!!");
+      showAlert("Sign In", "Please fill all the fields!!");
       return;
     }
 
@@ -63,7 +65,7 @@ export default function SignIn() {
     setLoading(false);
 
     if (!resp.success) {
-      Alert.alert("Sign In", resp.msg);
+      showAlert("Sign In", resp.msg);
     }
   };
 
@@ -78,10 +80,12 @@ export default function SignIn() {
   return (
     <SafeAreaView className="flex-1" style={styles.safeContent}>
       <StatusBar style={colorScheme === "dark" ? "light" : "dark"} />
-      <ScrollView contentContainerStyle={{ flexGrow: 1 }}
-    keyboardShouldPersistTaps="handled"
-    bounces={false}
-    showsVerticalScrollIndicator={false} >
+      <ScrollView
+        contentContainerStyle={{ flexGrow: 1 }}
+        keyboardShouldPersistTaps="handled"
+        bounces={false}
+        showsVerticalScrollIndicator={false}
+      >
         <View style={{ paddingHorizontal: wp(6) }} className="flex-1 gap-6 ">
           <View className="items-center">
             <Image
@@ -164,7 +168,10 @@ export default function SignIn() {
                   ) : (
                     <TouchableOpacity
                       onPress={handleLogin}
-                      style={{ height: hp(6), backgroundColor: theme.specialBg }}
+                      style={{
+                        height: hp(6),
+                        backgroundColor: theme.specialBg,
+                      }}
                       className="rounded-xl justify-center items-center"
                     >
                       <Text
@@ -195,7 +202,7 @@ export default function SignIn() {
                 </Text>
                 <Pressable onPress={() => router.push("signUp")}>
                   <Text
-                    style={{ fontSize: hp(1.8), color : theme.glow }}
+                    style={{ fontSize: hp(1.8), color: theme.glow }}
                     className="font-semibold"
                   >
                     Sign Up
@@ -213,11 +220,11 @@ export default function SignIn() {
                 <Pressable
                   className="p-4 rounded-2xl px-6 flex-row items-center"
                   style={[styles.googleButton, { backgroundColor: theme.tint }]}
-                  onPress={() => Alert.alert("SignIn", "Coming Soon!!!")}
+                  onPress={() => showAlert("SignIn", "Coming Soon!!!")}
                 >
                   <AntDesign name="google" size={22} color={"orange"} />
                   <Text
-                    style={{ fontSize: hp(1.7), color : theme.text }}
+                    style={{ fontSize: hp(1.7), color: theme.text }}
                     className="font-semibold mx-2"
                   >
                     Sign-In with Google
@@ -230,7 +237,7 @@ export default function SignIn() {
                 >
                   <AntDesign name="phone" size={22} color={"green"} />
                   <Text
-                    style={{ fontSize: hp(1.7), color : theme.text }}
+                    style={{ fontSize: hp(1.7), color: theme.text }}
                     className="font-semibold mx-2"
                   >
                     Sign-In with Phone

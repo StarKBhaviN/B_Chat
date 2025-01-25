@@ -12,10 +12,13 @@ import { useAuth } from "../context/authContext";
 import { ThemeContext } from "../context/ThemeContext";
 import { useFriendContext } from "../context/friendContext";
 import { getReceiverIdByProfileName } from "../utils/friendService";
+import { useAlert } from "../context/alertContext";
 
 export default function AddUser({ modalVisible, setModalVisible }) {
   const { theme, colorScheme } = useContext(ThemeContext);
   const styles = createStyles(theme, colorScheme);
+
+  const { showAlert } = useAlert();
 
   const [receiverName, setReceiverName] = useState("");
   const [reqMessage, setReqMessage] = useState("");
@@ -29,7 +32,8 @@ export default function AddUser({ modalVisible, setModalVisible }) {
     setAdding(true);
     // Sender : user.userId | Receiver : Other person
     if (!user?.userId || !receiverName.trim()) {
-      Alert.alert("Error", "Please enter a valid profile name.");
+      showAlert("Error", "Please enter a valid profile name.");
+      setAdding(false)
       return;
     }
 
@@ -41,14 +45,17 @@ export default function AddUser({ modalVisible, setModalVisible }) {
         reqMessage.trim() || "Heyy!!! Add me to have a Bee 👋😉"
       );
 
-      Alert.alert(`Request Status : ${result.Success ? "Success" : "Failed"}`, result.Message);
-      
+      showAlert(
+        `Request Status : ${result.Success ? "Success" : "Failed"}`,
+        result.Message
+      );
+
       setReceiverName("");
       setReqMessage("");
       setModalVisible(false);
     } catch (error) {
       console.error("Error in handleSendRequest:", error.message);
-      Alert.alert("Error", "Failed to send friend request.");
+      showAlert("Error", "Failed to send friend request.");
     } finally {
       setAdding(false);
     }
@@ -159,12 +166,12 @@ function createStyles(theme, colorScheme) {
     },
     btnCancel: {
       width: 80,
-      padding : 11
+      padding: 11,
     },
     txtAdd: {
       color: "white",
       fontWeight: "bold",
-      fontSize : 16
+      fontSize: 16,
     },
     txtCancel: {
       textAlign: "center",

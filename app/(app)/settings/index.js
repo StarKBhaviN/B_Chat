@@ -20,7 +20,6 @@ export default function settingsScreen({ navigation }) {
     setIsSleepActive((prevState) => !prevState);
   };
 
-  console.log(showUseageModal)
   const IconMap = {
     "cookie-clock": MaterialCommunityIcons,
     user: Feather,
@@ -54,7 +53,6 @@ export default function settingsScreen({ navigation }) {
         ]}
         onPress={() => {
           if (col.id === "usedToday") {
-            console.log("Opening modal")
             setShowUsageModal(true)
           }
           if (col.action) col.action();

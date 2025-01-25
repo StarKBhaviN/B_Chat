@@ -19,6 +19,8 @@ import {
   updateEmail as firebaseUpdateEmail,
 } from "firebase/auth";
 import { getFirestore, doc, updateDoc } from "firebase/firestore";
+import CustomAlert from "../../../components/Custom/CustomAlert";
+import { useAlert } from "../../../context/alertContext";
 
 export default function EmailVerification() {
   const { theme } = useContext(ThemeContext);
@@ -30,6 +32,7 @@ export default function EmailVerification() {
   const [isVerified, setIsVerified] = useState(user?.emailVerified || false);
   const [newEmail, setNewEmail] = useState(user?.email || ""); // Input for updating email
 
+  const {showAlert} = useAlert()
   // Refresh user state to ensure emailVerified is up-to-date
   useEffect(() => {
     const refreshUser = async () => {
@@ -47,22 +50,15 @@ export default function EmailVerification() {
   const handleVerify = async () => {
     try {
       await sendEmailVerification(user); // Send verification email
-      Alert.alert(
-        "Verification Sent",
-        "A verification email has been sent to your email address. Please check your inbox."
-      );
+      showAlert("Email Verify", "Email Verification Mail Sent.")
     } catch (error) {
-      console.error("Error sending verification email:", error);
-      Alert.alert(
-        "Error",
-        "Failed to send verification email. Please try again."
-      );
+      showAlert("Email Verify Error", "Failed to send verification email. Please try again.")
     }
   };
-
+  
   const handleUpdateEmail = async () => {
     if (newEmail.trim() === "") {
-      Alert.alert("Error", "Email cannot be empty.");
+      showAlert("Error", "Email cannot be empty.")
       return;
     }
 
@@ -76,10 +72,10 @@ export default function EmailVerification() {
         email: newEmail,
       });
 
-      Alert.alert("Success", "Email updated successfully!");
+      showAlert("Success", "Email updated successfully!");
     } catch (error) {
       console.error("Error updating email:", error);
-      Alert.alert("Error", "Failed to update email. Please try again.");
+      showAlert("Error", "Failed to update email. Please try again.");
     }
   };
 
@@ -87,7 +83,6 @@ export default function EmailVerification() {
     <View style={styles.container}>
       <View className="gap-2">
         <Text style={styles.heading}>Your Email</Text>
-
         <View className="flex flex-row justify-between">
           <TextInput
             style={styles.emailInput}
@@ -108,6 +103,7 @@ export default function EmailVerification() {
           </Pressable>
         </View>
 
+        
         <Text className="mt-2" style={{ color: theme.placeholder }}>
           {isVerified
             ? "Update your Email address."

@@ -6,7 +6,7 @@ import {
   TextInput,
   Switch,
 } from "react-native";
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { ThemeContext } from "../context/ThemeContext";
 import { StyleSheet } from "react-native";
 import {
@@ -15,6 +15,7 @@ import {
 } from "react-native-responsive-screen";
 import { Ionicons } from "@expo/vector-icons";
 import { TouchableOpacity } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function ModalTimeUsed({ modalVisible, setModalVisible }) {
   const { theme, colorScheme } = useContext(ThemeContext);
@@ -22,6 +23,31 @@ export default function ModalTimeUsed({ modalVisible, setModalVisible }) {
 
   const [isEnabled, setIsEnabled] = useState(false);
   const toggleSwitch = () => setIsEnabled((previousState) => !previousState);
+
+  const [timeUsedToday, setTimeUsedToday] = useState(0); // State to store time used today
+
+  useEffect(() => {
+    const getTimeUsed = async () => {
+      try {
+        const storedTime = await AsyncStorage.getItem("elapsedTime"); // Retrieve time from AsyncStorage
+        if (storedTime) {
+          setTimeUsedToday(Number(storedTime)); // Set the retrieved time
+        }
+      } catch (error) {
+        console.error("Error fetching time from AsyncStorage", error);
+      }
+    };
+
+    if (modalVisible) {
+      getTimeUsed(); // Fetch time when modal is visible
+    }
+  }, [modalVisible]); // Only run when modal is visible
+
+  // Function to format the time in a readable format (minutes)
+  const formatTime = (time) => {
+    const minutes = Math.floor(time / 60000);
+    return `${minutes} mins`;
+  };
 
   return (
     <Modal
@@ -40,7 +66,12 @@ export default function ModalTimeUsed({ modalVisible, setModalVisible }) {
                 thumbColor={isEnabled ? "#f5dd4b" : "#f4f3f4"}
                 ios_backgroundColor="#3e3e3e"
                 onValueChange={toggleSwitch}
-                style={{height : 30, width : 30, borderWidth : 2, borderColor : "red"}}
+                style={{
+                  height: 30,
+                  width: 30,
+                  borderWidth: 2,
+                  borderColor: "red",
+                }}
                 value={isEnabled}
               />
             </View>
@@ -49,7 +80,7 @@ export default function ModalTimeUsed({ modalVisible, setModalVisible }) {
               <Ionicons name="alarm-outline" size={30} color={theme.icon} />
               <View className="ms-3">
                 <Text className="text-lg" style={{ color: theme.text }}>
-                  10 Mins/90 Mins
+                  {formatTime(timeUsedToday)}/90 Mins
                 </Text>
                 <Text className="text-xs" style={{ color: theme.placeholder }}>
                   Used Today

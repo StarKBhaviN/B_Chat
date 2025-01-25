@@ -15,10 +15,12 @@ import ProfileEditModal from "../../components/ProfileEditModal";
 import { pickImage } from "../../utils/common";
 import axios from "axios";
 import { Avatar } from "react-native-elements";
+import { useAlert } from "../../context/alertContext";
 
 export default function Profile({ externalUserData, userId }) {
   const { theme, colorScheme } = useContext(ThemeContext);
   const { user, editProfile } = useAuth();
+  const {showAlert} = useAlert()
   const styles = createStyles(theme, colorScheme);
 
   const [userData, setUserData] = useState(externalUserData || user); // Store user data separately
@@ -42,6 +44,7 @@ export default function Profile({ externalUserData, userId }) {
       console.error("Error fetching user data:", error);
     }
   };
+
 
   useEffect(() => {
     if (externalUserData) {
@@ -83,7 +86,7 @@ export default function Profile({ externalUserData, userId }) {
       return imageUrl;
     } catch (error) {
       console.error("Upload Error: ", error.message);
-      Alert.alert("Upload Failed. Try again.");
+      showAlert("Upload Failed. Try again.");
       setLoading(false);
     }
   };

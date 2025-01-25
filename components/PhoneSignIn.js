@@ -16,12 +16,15 @@ import {
   signInWithCredential,
   PhoneAuthProvider,
 } from "firebase/auth";
+import { useAlert } from "../context/alertContext";
 
 export default function PhoneSignIn({ setModalVisible, modalVisible }) {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [code, setCode] = useState("");
   const [verificationId, setVerificationId] = useState(null);
   const recaptchaVerifier = useRef(null);
+
+  const { showAlert } = useAlert();
 
   const sendVerification = async () => {
     try {
@@ -32,10 +35,10 @@ export default function PhoneSignIn({ setModalVisible, modalVisible }) {
       );
       setVerificationId(verificationId);
       setPhoneNumber("");
-      Alert.alert("OTP Sent", "Check your phone for the verification code.");
+      showAlert("OTP Sent", "Check your phone for the verification code.");
     } catch (error) {
       console.log(error);
-      Alert.alert("Error", error.message);
+      showAlert("Error", error.message);
     }
   };
 
@@ -44,10 +47,10 @@ export default function PhoneSignIn({ setModalVisible, modalVisible }) {
       const credential = PhoneAuthProvider.credential(verificationId, code);
       await signInWithCredential(auth, credential);
       setCode("");
-      Alert.alert("Sign In", "Login Successful!");
+      showAlert("Sign In", "Login Successful!");
     } catch (error) {
       console.log(error);
-      Alert.alert("Error", "Invalid Code. Try Again.");
+      showAlert("Error", "Invalid Code. Try Again.");
     }
   };
 

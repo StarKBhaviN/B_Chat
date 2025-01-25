@@ -14,6 +14,8 @@ import {
 } from "@expo/vector-icons";
 import { useAuth } from "../context/authContext";
 import { useRouter } from "expo-router";
+import ModalBottomSheet from "./Custom/ModalBottomSheet";
+import ShareProfile from "./ShareProfile";
 
 export default function FriendItem({ item, removeAsFriend }) {
   const router = useRouter();
@@ -22,6 +24,8 @@ export default function FriendItem({ item, removeAsFriend }) {
 
   const { user } = useAuth();
   const { profileName, profileURL } = item;
+
+  const [showBottomSheet, setShowBottomSheet] = useState(false);
 
   const openChatRoom = () => {
     router.push({ pathname: "/chatRoom", params: item });
@@ -32,7 +36,7 @@ export default function FriendItem({ item, removeAsFriend }) {
   };
 
   const openBottomSheet = () => {
-    console.log("Open bottom sheets");
+    setShowBottomSheet(true);
   };
   return (
     <View
@@ -99,6 +103,13 @@ export default function FriendItem({ item, removeAsFriend }) {
             </Pressable>
           </View>
         </View>
+        <ModalBottomSheet
+          modalVisible={showBottomSheet}
+          setModalVisible={setShowBottomSheet}
+        >
+          <ShareProfile />
+
+        </ModalBottomSheet>
       </View>
 
       <Pressable

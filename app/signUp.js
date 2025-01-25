@@ -25,11 +25,14 @@ import axios from "axios";
 import { ThemeContext } from "../context/ThemeContext";
 import { Tooltip } from "react-native-elements";
 import { pickImage } from "../utils/common";
+import { useAlert } from "../context/alertContext";
 
 export default function SignUp() {
   // Import theme context for using theme
   const { colorScheme, theme } = useContext(ThemeContext);
   const styles = createStyles(theme, colorScheme);
+
+  const { showAlert } = useAlert();
 
   const router = useRouter();
   const { register, checkProfileNameAvailability } = useAuth();
@@ -46,7 +49,7 @@ export default function SignUp() {
   // Upload Image to Cloudinary
   const uploadImage = async () => {
     if (!image) {
-      Alert.alert("Please select an image first.");
+      showAlert("Please select an image first.");
       return;
     }
 
@@ -57,7 +60,6 @@ export default function SignUp() {
       name: `${userNameRef.current || "Unknown"}.jpg`,
     });
     data.append("upload_preset", "B_Chat"); // Replace with your Cloudinary preset
-
 
     try {
       const response = await axios.post(
@@ -74,7 +76,7 @@ export default function SignUp() {
       return imageUrl;
     } catch (error) {
       console.error("Upload Error: ", error);
-      Alert.alert("Upload Failed. Try again.");
+      showAlert("Upload Failed. Try again.");
     }
   };
 
@@ -84,7 +86,7 @@ export default function SignUp() {
       !passRef.current?.trim() ||
       !userNameRef.current?.trim()
     ) {
-      Alert.alert("Sign Up", "Please fill all the fields!!");
+      showAlert("Sign Up", "Please fill all the fields!!");
       return;
     }
 
@@ -94,7 +96,7 @@ export default function SignUp() {
     const uploadedImageUrl = await uploadImage();
 
     if (!uploadedImageUrl) {
-      Alert.alert("Sign Up", "Image upload failed. Please try again.");
+      showAlert("Sign Up", "Image upload failed. Please try again.");
       setLoading(false);
       return;
     }
@@ -110,7 +112,7 @@ export default function SignUp() {
     setLoading(false);
 
     if (!resp.success) {
-      Alert.alert("Sign Up", resp.msg);
+      showAlert("Sign Up", resp.msg);
     }
   };
 
@@ -130,7 +132,6 @@ export default function SignUp() {
       setIsAvailable(false);
     }
   };
-
 
   return (
     <SafeAreaView className="flex-1" style={styles.safeContent}>
@@ -304,7 +305,10 @@ export default function SignUp() {
                     placeholder="Profile URL"
                     placeholderTextColor={"gray"}
                   /> */}
-                  <TouchableOpacity onPress={() => pickImage(setImage)} className="flex-1">
+                  <TouchableOpacity
+                    onPress={() => pickImage(setImage)}
+                    className="flex-1"
+                  >
                     <Text
                       style={{ fontSize: hp(2), color: theme.text }}
                       className="font-semibold text-neutral-700"
@@ -325,7 +329,7 @@ export default function SignUp() {
                   <TouchableOpacity
                     onPress={handleRegister}
                     style={{ height: hp(6), backgroundColor: theme.specialBg }}
-                    disabled={isAvailable===null || isAvailable===false}
+                    disabled={isAvailable === null || isAvailable === false}
                     className="mt-2 rounded-xl justify-center items-center"
                   >
                     <Text

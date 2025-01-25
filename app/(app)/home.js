@@ -225,7 +225,7 @@ function createStyles(theme, colorScheme) {
       borderRadius: hp(3.25),
       justifyContent: "center",
       alignItems: "center",
-      elevation: 5,
+      elevation: 2,
     },
     notFound: {
       flex: 1,
