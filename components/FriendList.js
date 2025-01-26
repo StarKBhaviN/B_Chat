@@ -68,11 +68,11 @@ export default function FriendList({ searchTerm }) {
     >
       {filteredFriends.map((item, index) => {
         return (
-            <FriendItem
-              key={item.userId}
-              item={item}
-              removeAsFriend={removeAsFriend}
-            />
+          <FriendItem
+            key={item.userId}
+            item={item}
+            removeAsFriend={removeAsFriend}
+          />
         );
       })}
     </ScrollView>

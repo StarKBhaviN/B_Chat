@@ -7,6 +7,7 @@ import {
 import { ThemeContext } from "../../../context/ThemeContext";
 import FriendList from "../../../components/FriendList";
 import { SearchBar } from "react-native-elements";
+import { Entypo } from "@expo/vector-icons";
 
 export default function socialScreen() {
   const { theme } = useContext(ThemeContext);
@@ -25,31 +26,42 @@ export default function socialScreen() {
 
   return (
     <View style={styles.container}>
-      <SearchBar
-        key="search-bar"
-        placeholder="Search for Beez by Name..."
-        placeholderTextColor={theme.placeholder}
-        onChangeText={(text) => setSearchTerm(text)}
-        containerStyle={{
-          height: 50,
-          backgroundColor: "transparent",
-          borderWidth: 0,
-          borderColor: theme.background,
-          elevation: 0,
-          shadowOpacity: 0,
-        }}
-        inputContainerStyle={{
-          padding: 0,
-          height: 30,
-          backgroundColor: theme.tint,
-        }}
-        inputStyle={{
-          color: theme.glow,
-          fontSize: 15,
-        }}
-        value={searchTerm}
-        // ref={searchRef}
-      />
+      {/* <View className="flex-row items-center justify-between border"> */}
+        <SearchBar
+          key="search-bar"
+          placeholder="Search for Beez by Name..."
+          placeholderTextColor={theme.placeholder}
+          onChangeText={(text) => setSearchTerm(text)}
+          containerStyle={{
+            height: 50,
+            backgroundColor: "transparent",
+            borderWidth: 0,
+            borderColor: theme.background,
+            elevation: 0,
+            shadowOpacity: 0,
+          }}
+          inputContainerStyle={{
+            padding: 0,
+            height: 30,
+            backgroundColor: theme.tint,
+          }}
+          inputStyle={{
+            color: theme.glow,
+            fontSize: 15,
+          }}
+          value={searchTerm}
+          searchIcon={true}
+          cancelIcon={false}
+          clearIcon={false}
+          // ref={searchRef}
+        />
+        {/* <Entypo
+          name="cross"
+          size={24}
+          color="black"
+          style={{ position: "absolute" }}
+        /> */}
+      {/* </View> */}
       <FriendList searchTerm={debouncedSearchTerm} />
     </View>
   );

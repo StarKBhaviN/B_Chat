@@ -24,6 +24,7 @@ export default function ModalTimeUsed({ modalVisible, setModalVisible }) {
   const [isEnabled, setIsEnabled] = useState(false);
   const toggleSwitch = () => setIsEnabled((previousState) => !previousState);
 
+
   const [timeUsedToday, setTimeUsedToday] = useState(0); // State to store time used today
 
   useEffect(() => {
@@ -80,7 +81,7 @@ export default function ModalTimeUsed({ modalVisible, setModalVisible }) {
               <Ionicons name="alarm-outline" size={30} color={theme.icon} />
               <View className="ms-3">
                 <Text className="text-lg" style={{ color: theme.text }}>
-                  {formatTime(timeUsedToday)}/90 Mins
+                  {formatTime(timeUsedToday)}{!isEnabled ? "" : `/90 mins`}
                 </Text>
                 <Text className="text-xs" style={{ color: theme.placeholder }}>
                   Used Today
