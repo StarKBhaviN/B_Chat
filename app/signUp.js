@@ -95,17 +95,17 @@ export default function SignUp() {
     // Wait for image upload
     const uploadedImageUrl = await uploadImage();
 
-    if (!uploadedImageUrl) {
-      showAlert("Sign Up", "Image upload failed. Please try again.");
-      setLoading(false);
-      return;
-    }
+    // if (!uploadedImageUrl) {
+    //   showAlert("Sign Up", "Image upload failed. Please try again.");
+    //   setLoading(false);
+    //   return;
+    // }
 
     let resp = await register(
       emailRef.current,
       passRef.current,
       userNameRef.current,
-      uploadedImageUrl,
+      uploadedImageUrl || "https://t4.ftcdn.net/jpg/09/43/36/57/360_F_943365717_H0GnfeYj07d4oV1xPz8WHSZgcvgFoZdW.jpg",
       bioRef.current || ""
     );
 

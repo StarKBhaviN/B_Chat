@@ -7,8 +7,18 @@ import {
   listenToFriendRequests,
   removeFromFriend,
 } from "../utils/friendService"; // Adjust path as necessary
-import { doc, getDoc, onSnapshot } from "firebase/firestore";
-import { usersRef } from "../firebaseConfig";
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  limit,
+  onSnapshot,
+  orderBy,
+  query,
+} from "firebase/firestore";
+import { roomsRef, usersRef } from "../firebaseConfig";
+import { getRoomID } from "../utils/common";
 
 export const FriendContext = createContext();
 
@@ -16,16 +26,15 @@ export const FriendContextProvider = ({ children, userId }) => {
   const [friendRequests, setFriendRequests] = useState([]);
   const [fetchAllFriends, setAllFriends] = useState([]);
   const listeners = useRef(new Map());
-
+  
   useEffect(() => {
-    if (!userId) return;
-
-    const unsubscribe = listenToFriendRequests(userId, setFriendRequests);
-
-    return () => {
-      unsubscribe(); // Stop listening when the component unmounts or userId changes
-    };
+    // console.log("Running this")
+    if (userId) {
+      // console.log("Got in")
+      getAllFriendDataWithMessages();
+    }
   }, [userId]);
+
 
   // Fetch a user's friend IDs
   const fetchAllFrndID = async () => {
@@ -35,7 +44,46 @@ export const FriendContextProvider = ({ children, userId }) => {
       const friends = userDoc.data().friends || [];
       return friends;
     }
+
     return [];
+  };
+
+  const fetchFriendLastMessages = async (friendIds) => {
+    try {
+      const friendsWithMessages = await Promise.all(
+        friendIds.map(async (friendId) => {
+          if (!friendId) {
+            console.error("Invalid friendId:", friendId);
+            return null;
+          }
+
+          const roomId = getRoomID(userId, friendId);
+          if (!roomId) {
+            console.error(
+              `Invalid roomId for userId: ${userId}, friendId: ${friendId}`
+            );
+            return { friendId, lastMessage: null };
+          }
+
+          const messagesRef = collection(doc(roomsRef, roomId), "messages");
+          const lastMessageQuery = query(
+            messagesRef,
+            orderBy("createdAt", "desc"),
+            limit(1)
+          );
+
+          const lastMessageSnap = await getDocs(lastMessageQuery);
+          const lastMessage = lastMessageSnap.docs[0]?.data();
+
+          return { friendId, lastMessage };
+        })
+      );
+
+      return friendsWithMessages.filter(Boolean); // Filter out null entries
+    } catch (error) {
+      console.error("Error in fetchFriendLastMessages:", error);
+      return [];
+    }
   };
 
   // Subscribe to individual friend updates
@@ -65,6 +113,62 @@ export const FriendContextProvider = ({ children, userId }) => {
     }
   };
 
+  const getAllFriendDataWithMessages = async () => {
+    try {
+      // Fetch all friend IDs
+      const friendIDs = await fetchAllFrndID();
+
+      // Fetch details for all friends
+      const friendsWithDetails = await Promise.all(
+        friendIDs.map(async (friendId) => {
+          // Subscribe to real-time updates for each friend
+          subscribeToFriendUpdates(friendId);
+          
+          // Fetch individual friend's data
+          const friendDoc = await getDoc(doc(usersRef, friendId));
+          if (friendDoc.exists()) {
+            return { friendId, ...friendDoc.data() };
+          }
+          return null; // Skip if data doesn't exist
+        })
+      );
+      
+      
+      // Remove null entries (for non-existent friends)
+      const validFriends = friendsWithDetails.filter(Boolean);
+      
+      // Fetch the last message for each friend
+      const friendsWithMessages = await fetchFriendLastMessages(friendIDs);
+      
+      
+      // Combine friend details with their last message
+      const combinedData = validFriends.map((friend) => {
+        const lastMessage = friendsWithMessages.find(
+          (message) => message.friendId === friend.friendId
+        )?.lastMessage;
+        return {
+          ...friend,
+          lastMessage: lastMessage || null, // Include lastMessage or null
+        };
+      });
+      
+      // Update the state with the combined data
+      setAllFriends(combinedData);
+      // console.log("Fetched : ",fetchAllFriends)
+    } catch (error) {
+      console.error("Error in getAllFriendDataWithMessages:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (!userId) return;
+
+    const unsubscribe = listenToFriendRequests(userId, setFriendRequests);
+
+    return () => {
+      unsubscribe();
+    };
+  }, [userId]);
   // Fetch all friend data
   const getAllFriendData = async () => {
     const friendIDs = await fetchAllFrndID();
@@ -125,6 +229,7 @@ export const FriendContextProvider = ({ children, userId }) => {
         friendRequests,
         fetchAllFriends,
         getAllFriendData,
+        getAllFriendDataWithMessages,
         removeAsFriend,
         setFriendRequests,
         fetchFriendRequests,

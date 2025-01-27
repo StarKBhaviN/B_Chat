@@ -113,7 +113,7 @@ export default function Profile({ externalUserData, userId }) {
             />
           ) : (
             <Image
-              source={{ uri: userData?.profileURL }}
+              source={{ uri: userData?.profileURL || "https://t4.ftcdn.net/jpg/09/43/36/57/360_F_943365717_H0GnfeYj07d4oV1xPz8WHSZgcvgFoZdW.jpg" }}
               style={styles.profileImage}
             />
           )}
@@ -130,6 +130,7 @@ export default function Profile({ externalUserData, userId }) {
                 right: 0,
                 backgroundColor: colorScheme === "dark" ? "#092635" : "#FAF0E6",
               }}
+              disabled
             />
           )}
         </View>

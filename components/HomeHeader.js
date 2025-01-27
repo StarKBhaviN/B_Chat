@@ -86,7 +86,7 @@ export default function HomeHeader({
                     aspectRatio: 1,
                     borderRadius: 100,
                   }}
-                  source={user?.profileURL}
+                  source={user?.profileURL || "https://t4.ftcdn.net/jpg/09/43/36/57/360_F_943365717_H0GnfeYj07d4oV1xPz8WHSZgcvgFoZdW.jpg"}
                   placeholder={blurhash}
                   transition={500}
                 />

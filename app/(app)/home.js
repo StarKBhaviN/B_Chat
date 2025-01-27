@@ -38,137 +38,59 @@ import AddUser from "../../components/AddUser";
 import { getRoomID } from "../../utils/common";
 import { ThemeContext } from "../../context/ThemeContext";
 import { Image } from "expo-image";
-import HelloBee from "../../assets/images/HelloBee.png"
+import HelloBee from "../../assets/images/HelloBee.png";
+import { useFriendContext } from "../../context/friendContext";
 // import { useNotification } from "../../context/NotificationContext";
 
 export default function Home() {
   const { theme, colorScheme } = useContext(ThemeContext);
   const styles = createStyles(theme, colorScheme);
-  // const { expoPushToken, notification, error } = useNotification();
 
-  // if (error) {
-  //   return <Text>{error}</Text>;
-  // }
-  // console.log(expoPushToken, notification, error);
   const { user } = useAuth();
+  const { fetchAllFriends, getAllFriendDataWithMessages } = useFriendContext();
+
   const [users, setUsers] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(true);
-  const listeners = useRef(new Map());
-  const messageListeners = useRef(new Map());
-  const unsubscribeUser = useRef(null);
+  // const listeners = useRef(new Map());
+  // const messageListeners = useRef(new Map());
+  // const unsubscribeUser = useRef(null);
   const dataFetched = useRef(false); // Flag to track if data is already fetched
 
-  const fetchInitialUsers = async () => {
-    if (!user?.userId || dataFetched.current) return;
-
+  // Fetch friends and their last messages on first load
+  const fetchFriends = async () => {
+    // console.log("Started",user.userID);
     setLoading(true);
-
-    unsubscribeUser.current = onSnapshot(
-      doc(usersRef, user.userId),
-      (docSnap) => {
-        const friendIds = docSnap.data()?.friends || [];
-        listenToFriendStatus(friendIds);
-      }
-    );
-
-    const currentUserDoc = await getDoc(doc(usersRef, user?.userId));
-    const friendIds = currentUserDoc.data()?.friends || [];
-
-    if (friendIds.length === 0) {
-      setUsers([]);
-      setLoading(false);
-      return;
-    }
-
-    const userQry = query(usersRef, where("userId", "in", friendIds));
-    const snapshot = await getDocs(userQry);
-
-    let initialUsers = [];
-    snapshot.forEach((doc) => {
-      initialUsers.push({ ...doc.data() });
-    });
-
-    const usersWithLastMessage = await Promise.all(
-      initialUsers.map(async (friend) => {
-        let roomId = getRoomID(user?.userId, friend.userId);
-        const messagesRef = collection(doc(roomsRef, roomId), "messages");
-        const q = query(messagesRef, orderBy("createdAt", "desc"), limit(1));
-
-        const lastMessageSnap = await getDocs(q);
-        let lastMessage = lastMessageSnap.docs[0]?.data();
-
-        if (!messageListeners.current.has(roomId)) {
-          const unsub = onSnapshot(q, (snap) => {
-            const newMessage = snap.docs[0]?.data();
-            setUsers((prevUsers) => {
-              const updatedUsers = prevUsers.map((u) =>
-                u.userId === friend.userId
-                  ? { ...u, lastMessage: newMessage }
-                  : u
-              );
-              return updatedUsers;
-            });
-          });
-          messageListeners.current.set(roomId, unsub);
-        }
-
-        return { ...friend, lastMessage };
-      })
-    );
-
-    setUsers(usersWithLastMessage);
+    await getAllFriendDataWithMessages(); // Fetch friends and messages
+    // console.log("Stopped");
     setLoading(false);
-    dataFetched.current = true;
   };
 
-  const listenToFriendStatus = (friendIds) => {
-    friendIds.forEach((friendId) => {
-      if (!listeners.current.has(friendId)) {
-        const unsub = onSnapshot(doc(usersRef, friendId), (docSnap) => {
-          const updatedUser = docSnap.data();
-          setUsers((prevUsers) => {
-            const existing = prevUsers.find((u) => u.userId === friendId);
-            if (existing) {
-              // Update the existing user
-              return prevUsers.map((u) =>
-                u.userId === friendId ? { ...u, ...updatedUser } : u
-              );
-            } else {
-              // Add a new user
-              return [...prevUsers, updatedUser];
-            }
-          });
+  useEffect(() => {
+    // console.log("Fetch all :",fetchAllFriends)
+    setUsers(fetchAllFriends);
+  }, [fetchAllFriends]);
+  
+
+  // Optimize listening to message updates
+  const listenToFriendMessages = useCallback(() => {
+    fetchAllFriends.forEach((friend) => {
+      const roomId = getRoomID(user.userId, friend.userId);
+      const messagesRef = collection(doc(roomsRef, roomId), "messages");
+      const q = query(messagesRef, orderBy("createdAt", "desc"), limit(1));
+
+      onSnapshot(q, (snap) => {
+        const newMessage = snap.docs[0]?.data();
+        setUsers((prevUsers) => {
+          return prevUsers.map((u) =>
+            u.userId === friend.userId ? { ...u, lastMessage: newMessage } : u
+          );
         });
-        listeners.current.set(friendId, unsub);
-      }
+      });
     });
-  };
+  }, [fetchAllFriends, user?.userId]);
 
-  useFocusEffect(
-    useCallback(() => {
-      if (!dataFetched.current) {
-        fetchInitialUsers();
-      }
-
-      if (!unsubscribeUser.current && user?.userId) {
-        unsubscribeUser.current = onSnapshot(
-          doc(usersRef, user?.userId),
-          (docSnap) => {
-            const friendIds = docSnap.data()?.friends || [];
-            listenToFriendStatus(friendIds);
-          }
-        );
-      }
-
-      return () => {
-        // Unsubscribe only when component unmounts
-        unsubscribeUser.current?.();
-        unsubscribeUser.current = null;
-      };
-    }, [user])
-  );
-
+  // Sort the friends based on last message time
   const sortedUsers = useMemo(() => {
     return [...users].sort((a, b) => {
       const aTime = a.lastMessage?.createdAt?.seconds || 0;
@@ -176,6 +98,27 @@ export default function Home() {
       return bTime - aTime;
     });
   }, [users]);
+
+  useFocusEffect(
+    useCallback(() => {
+      // Define an async function inside the callback
+      const fetchData = async () => {
+        // console.log("Running this", user?.userId);
+
+        if (user?.userId && !dataFetched.current) {
+          await fetchFriends();
+          dataFetched.current = true;
+        }
+
+        // Start listening to friends' messages once fetched
+        if (user && fetchAllFriends.length > 0) {
+          listenToFriendMessages();
+        }
+      };
+
+      fetchData();
+    }, [user, fetchAllFriends, listenToFriendMessages])
+  );
 
   return (
     <View className="flex-1" style={{ backgroundColor: theme.background }}>

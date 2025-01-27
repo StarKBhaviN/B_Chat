@@ -4,6 +4,7 @@ import ChatItem from "./ChatItem";
 import Animated, { LinearTransition, SequencedTransition } from "react-native-reanimated";
 
 export default function ChatList({ users, currentUser }) {
+  // console.log("Chat List :",users)
   return (
     <View className="flex-1">
       <Animated.FlatList

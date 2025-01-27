@@ -117,7 +117,7 @@ export default function ChatItem({ item, noBorder, currentUser }) {
           containerStyle={{ position: "absolute", top: -2 }}
         />
         <Image
-          source={item?.profileURL}
+          source={item?.profileURL || "https://t4.ftcdn.net/jpg/09/43/36/57/360_F_943365717_H0GnfeYj07d4oV1xPz8WHSZgcvgFoZdW.jpg"}
           style={{ height: hp(5.5), width: hp(5.5), borderRadius: 100 }}
           className="rounded-full"
           placeholder={blurhash}
