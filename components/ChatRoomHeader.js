@@ -20,6 +20,7 @@ export default function ChatRoomHeader({ user, router }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const animation = useRef(new Animated.Value(0)).current;
 
+  // console.log(user)
   useEffect(() => {
     if (user?.userId) {
       const unsubscribe = onSnapshot(
@@ -55,7 +56,7 @@ export default function ChatRoomHeader({ user, router }) {
 
   const expandedHeight = animation.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, hp(26)], // Adjust height as needed
+    outputRange: [0, hp(23)], // Adjust height as needed
   });
 
   return (
@@ -64,8 +65,8 @@ export default function ChatRoomHeader({ user, router }) {
         options={{
           title: "",
           headerShadowVisible: false,
-          headerStyle : {
-            backgroundColor : colorScheme === "dark" ? theme.background : ""
+          headerStyle: {
+            backgroundColor: colorScheme === "dark" ? theme.background : "",
           },
           headerLeft: () => (
             <View className="flex-row items-center gap-2">
@@ -73,7 +74,11 @@ export default function ChatRoomHeader({ user, router }) {
                 onPress={() => router.back()}
                 style={{ padding: 1 }}
               >
-                <Entypo name="chevron-left" size={hp(3.3)} color={colorScheme==="dark" ? theme.icon : ""} />
+                <Entypo
+                  name="chevron-left"
+                  size={hp(3.3)}
+                  color={colorScheme === "dark" ? theme.icon : ""}
+                />
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -96,16 +101,22 @@ export default function ChatRoomHeader({ user, router }) {
                     style={{
                       fontSize: hp(2.5),
                       marginBottom: -1,
-                      color : colorScheme==="dark" ? theme.glow : "#404040"
+                      color: colorScheme === "dark" ? theme.glow : "#404040",
                     }}
                     className="font-medium"
                   >
                     {user?.profileName}
                   </Text>
-                  <Text style={{ fontSize: hp(1.6), color : colorScheme==="dark" ? theme.text : "" }}>
+                  <Text
+                    style={{
+                      fontSize: hp(1.6),
+                      color: colorScheme === "dark" ? theme.text : "",
+                    }}
+                  >
                     {status === "online"
                       ? "Active Now"
-                      : status === "offline" && formatMessageTime(lastSeen) === "Just now"
+                      : status === "offline" &&
+                        formatMessageTime(lastSeen) === "Just now"
                       ? "Just Now"
                       : `Active ${renderTime()}`}
                   </Text>
@@ -127,7 +138,8 @@ export default function ChatRoomHeader({ user, router }) {
         style={{
           height: expandedHeight,
           overflow: "hidden",
-          backgroundColor: colorScheme === "dark" ? theme.background : "#f0f0f0",
+          backgroundColor:
+            colorScheme === "dark" ? theme.background : "#f0f0f0",
           padding: isExpanded ? hp(1) : 0,
           alignItems: "center",
         }}
@@ -153,7 +165,8 @@ export default function ChatRoomHeader({ user, router }) {
               style={{
                 fontSize: hp(3),
                 fontWeight: "600",
-                color : theme.glow
+                color: theme.glow,
+                marginTop: 6,
               }}
             >
               {user?.profileName}
@@ -167,9 +180,9 @@ export default function ChatRoomHeader({ user, router }) {
             >
               {user?.bio || "This user hasn't added a bio yet."}
             </Text>
-            <Text style={{ fontSize: hp(1.8), marginTop: 10, color : theme.text }}>
-              Joined: {user?.joinedDate || "N/A"}
-            </Text>
+            {/* <Text style={{ fontSize: hp(1.8), marginTop: 10, color : theme.text }}>
+              Joined: {user?.createdAt || "N/A"}
+            </Text> */}
           </View>
         )}
       </Animated.View>

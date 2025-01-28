@@ -23,11 +23,11 @@ export default function FriendList({ searchTerm }) {
   const getTimeOfDay = () => {
     const hour = new Date().getHours();
     if (hour >= 5 && hour < 12) {
-      return "Snacks";
+      return "Break-fast";
     } else if (hour >= 12 && hour < 14) {
       return "Lunch";
     } else if (hour >= 14 && hour < 19) {
-      return "At the Garden";
+      return "Snacks";
     } else {
       return "Dinner";
     }

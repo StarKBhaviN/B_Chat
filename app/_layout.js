@@ -25,7 +25,7 @@ Notifications.setNotificationHandler({
 
 const MainLayout = () => {
   const { user, isAuthenticated } = useAuth();
-  
+
   const segments = useSegments();
   const appState = useRef(AppState.currentState);
 
@@ -35,17 +35,20 @@ const MainLayout = () => {
 
   // Store the start time when the app opens
   useEffect(() => {
+    startTimer()
     const checkPreviousSession = async () => {
       try {
         const lastActiveDate = await AsyncStorage.getItem("lastActiveDate");
         const today = new Date().toLocaleDateString();
 
         if (lastActiveDate !== today) {
+          console.log("Day changed");
           await AsyncStorage.setItem("lastActiveDate", today);
           await AsyncStorage.setItem("elapsedTime", "0");
           setElapsedTime(0); // Reset elapsed time if it's a new day
         } else {
           const savedTime = await AsyncStorage.getItem("elapsedTime");
+          console.log("Saved Time :", savedTime);
           setElapsedTime(Number(savedTime) || 0);
         }
       } catch (error) {
@@ -75,15 +78,31 @@ const MainLayout = () => {
 
   // Start timer when app is active
   const startTimer = async () => {
+    console.log("Timer started");
     setStartTime(Date.now());
     setTimerRunning(true);
+
+    // Set up a timer to update elapsed time every minute
+    setInterval(async () => {
+      if (timerRunning) {
+        
+        const currentTime = Date.now();
+        const timeSpentToday = currentTime - startTime + (elapsedTime || 0);
+        console.log("Updating elapsed time every minute: ", timeSpentToday);
+        await AsyncStorage.setItem("elapsedTime", timeSpentToday.toString());
+        setElapsedTime(timeSpentToday);
+      }
+    }, 60000); // Update every 60,000 ms (1 minute)
   };
-  
+
   // Stop timer and save to AsyncStorage
   const stopTimer = async () => {
+    console.log("Timer stopped");
     if (startTime) {
       const currentTime = Date.now();
-      const timeSpentToday = currentTime - startTime + elapsedTime;
+      const timeSpentToday = currentTime - startTime + (elapsedTime || 0);
+      console.log(currentTime,startTime,elapsedTime)
+      console.log("Setting elpased time :", timeSpentToday);
       await AsyncStorage.setItem("elapsedTime", timeSpentToday.toString());
       setElapsedTime(timeSpentToday);
     }
