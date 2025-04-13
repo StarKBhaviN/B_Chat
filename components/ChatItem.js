@@ -22,11 +22,14 @@ import { db } from "../firebaseConfig";
 import { Badge } from "react-native-elements";
 import { ThemeContext } from "../context/ThemeContext";
 import { useRouter } from "expo-router";
+import { useMultiSelection } from "../context/multiSelectionContext";
 
 export default function ChatItem({ item, noBorder, currentUser }) {
   const router = useRouter();
 
   const { theme, colorScheme } = useContext(ThemeContext);
+  const { selectedChats, toggleChatSelection } = useMultiSelection();
+
   const [lastMessage, setLastMessage] = useState(undefined);
   const [unreadCount, setUnreadCount] = useState(0);
 
@@ -68,10 +71,6 @@ export default function ChatItem({ item, noBorder, currentUser }) {
     }
   };
 
-  const openChatRoom = () => {
-    router.push({ pathname: "/chatRoom", params: item });
-  };
-
   const renderTime = () => {
     if (!currentUser) return;
     if (lastMessage) {
@@ -95,14 +94,28 @@ export default function ChatItem({ item, noBorder, currentUser }) {
     }
   };
 
+  const isSelected = selectedChats.includes(item.userId);
+
   return (
     <TouchableOpacity
-      onPress={openChatRoom}
-      className={`flex-row justify-between mx-4 items-center gap-3 mb-4 pb-2 ${
+      onPress={() => {
+        if (selectedChats.length > 0) {
+          toggleChatSelection(item.userId);
+        } else {
+          router.push({ pathname: "/chatRoom", params: item });
+        }
+      }}
+      onLongPress={() => toggleChatSelection(item.userId)}
+      className={`flex-row justify-between items-center gap-3 p-3 ${
         noBorder ? "" : `border-b`
       }`}
       style={{
         borderBottomColor: colorScheme === "dark" ? "#3C3C3C" : "#423b3b",
+        backgroundColor: !isSelected
+          ? "transparent"
+          : colorScheme === "dark"
+          ? "rgba(51, 55, 100, 0.3)"
+          : "rgba(114, 112, 112, 0.3)",
       }}
     >
       <View style={{ alignItems: "flex-start" }}>
@@ -117,7 +130,10 @@ export default function ChatItem({ item, noBorder, currentUser }) {
           containerStyle={{ position: "absolute", top: -2 }}
         />
         <Image
-          source={item?.profileURL || "https://t4.ftcdn.net/jpg/09/43/36/57/360_F_943365717_H0GnfeYj07d4oV1xPz8WHSZgcvgFoZdW.jpg"}
+          source={
+            item?.profileURL ||
+            "https://t4.ftcdn.net/jpg/09/43/36/57/360_F_943365717_H0GnfeYj07d4oV1xPz8WHSZgcvgFoZdW.jpg"
+          }
           style={{ height: hp(5.5), width: hp(5.5), borderRadius: 100 }}
           className="rounded-full"
           placeholder={blurhash}
@@ -127,7 +143,7 @@ export default function ChatItem({ item, noBorder, currentUser }) {
 
       {/* Name and Last Message */}
       <View className="flex-1 gap-1">
-        <View className="flex-row justify-between">
+        <View className="flex-row justify-between items-center">
           <Text
             style={{
               fontSize: hp(1.8),
@@ -138,7 +154,7 @@ export default function ChatItem({ item, noBorder, currentUser }) {
             {item?.profileName}
           </Text>
           <Text
-            style={{ fontSize: hp(1.6) }}
+            style={{ fontSize: hp(1.4) }}
             className="font-medium text-neutral-500"
           >
             {renderTime()}
@@ -153,7 +169,7 @@ export default function ChatItem({ item, noBorder, currentUser }) {
           </Text>
           {unreadCount > 0 && (
             <Badge
-              value={<Text style={{ fontSize: 12 }}>{unreadCount}</Text>}
+              value={<Text style={{ fontSize: 11 }}>{unreadCount}</Text>}
               status="success"
             />
           )}

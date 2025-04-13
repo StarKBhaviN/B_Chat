@@ -205,7 +205,7 @@ export default function ChatRoom() {
             recipientData.pushToken,
             `${user?.profileName}`,
             `${message}`, // Notification title and body
-            { roomId } // Optional payload data
+            { roomId, uniqueId: `msg_${Date.now()}` } // Optional payload data
           );
         }
       }

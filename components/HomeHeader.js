@@ -21,7 +21,12 @@ import {
   MenuTrigger,
 } from "react-native-popup-menu";
 import { MenuItems } from "./CustomMenuItems";
-import { AntDesign, Feather, Ionicons } from "@expo/vector-icons";
+import {
+  AntDesign,
+  Feather,
+  Ionicons,
+  MaterialIcons,
+} from "@expo/vector-icons";
 import { router } from "expo-router";
 import { ThemeContext } from "../context/ThemeContext";
 import { StatusBar } from "expo-status-bar";
@@ -34,6 +39,9 @@ export default function HomeHeader({
   title = "Chats",
   showProfile = true,
   showBack = false,
+  onBackPress,
+  showDelete = false,
+  multiSelection = false,
 }) {
   const { colorScheme, theme } = useContext(ThemeContext);
   const { friendRequests } = useFriendContext();
@@ -63,7 +71,10 @@ export default function HomeHeader({
         </View>
 
         {showProfile && (
-          <View className="flex flex-row items-center" style={{ padding: 0 }}>
+          <View
+            className="flex flex-row items-center"
+            style={{ padding: 0 }}
+          >
             <TouchableOpacity
               className="me-3"
               onPress={() => router.push("beez")}
@@ -86,7 +97,10 @@ export default function HomeHeader({
                     aspectRatio: 1,
                     borderRadius: 100,
                   }}
-                  source={user?.profileURL || "https://t4.ftcdn.net/jpg/09/43/36/57/360_F_943365717_H0GnfeYj07d4oV1xPz8WHSZgcvgFoZdW.jpg"}
+                  source={
+                    user?.profileURL ||
+                    "https://t4.ftcdn.net/jpg/09/43/36/57/360_F_943365717_H0GnfeYj07d4oV1xPz8WHSZgcvgFoZdW.jpg"
+                  }
                   placeholder={blurhash}
                   transition={500}
                 />
@@ -140,15 +154,27 @@ export default function HomeHeader({
             </Menu>
           </View>
         )}
+        {(showDelete || showBack) && (
+          <View className="flex flex-row items-center">
+            {showDelete && (
+              <MaterialIcons
+                name="delete-outline"
+                size={24}
+                color="white"
+                className="me-2"
+              />
+            )}
 
-        {showBack && (
-          <Ionicons
-            name="arrow-back"
-            size={24}
-            style={{ padding: 4 }}
-            color={"white"}
-            onPress={() => router.back()}
-          />
+            {showBack && (
+              <Ionicons
+                name="arrow-back"
+                size={24}
+                style={{ padding: 4 }}
+                color={"white"}
+                onPress={() => (multiSelection ? onBackPress() : router.back())}
+              />
+            )}
+          </View>
         )}
       </View>
     </View>
@@ -158,7 +184,7 @@ export default function HomeHeader({
 function createStyles(theme, colorScheme) {
   return StyleSheet.create({
     headerLayout: {
-      backgroundColor: theme.appBg, 
+      backgroundColor: theme.appBg,
     },
     header: {
       display: "flex",
@@ -166,7 +192,7 @@ function createStyles(theme, colorScheme) {
       justifyContent: "space-between",
       alignItems: "center",
       paddingHorizontal: 20,
-      backgroundColor: "#2f3a4b", 
+      backgroundColor: "#2f3a4b",
       paddingBottom: 4,
       borderBottomLeftRadius: 24,
       borderBottomRightRadius: 24,

@@ -1,10 +1,22 @@
 import { View, Text, FlatList } from "react-native";
-import React from "react";
+import React, { useCallback, useState } from "react";
 import ChatItem from "./ChatItem";
-import Animated, { LinearTransition, SequencedTransition } from "react-native-reanimated";
+import Animated, {
+  LinearTransition,
+  SequencedTransition,
+} from "react-native-reanimated";
+import { RefreshControl } from "react-native";
 
 export default function ChatList({ users, currentUser }) {
-  // console.log("Chat List :",users)
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 2000);
+  }, []);
+  
   return (
     <View className="flex-1">
       <Animated.FlatList
@@ -13,6 +25,9 @@ export default function ChatList({ users, currentUser }) {
         contentContainerStyle={{ paddingVertical: 16 }}
         keyExtractor={(item) => item.userId}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
         renderItem={({ item, index }) => (
           <ChatItem
             currentUser={currentUser}

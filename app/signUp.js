@@ -63,7 +63,7 @@ export default function SignUp() {
 
     try {
       const response = await axios.post(
-        "https://api.cloudinary.com/v1_1/dzjyqifhh/image/upload",
+        "https://api.cloudinary.com/v1_1/b-chat/image/upload",
         data,
         {
           headers: {

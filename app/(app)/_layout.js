@@ -5,9 +5,12 @@ import HomeHeader from "../../components/HomeHeader";
 import * as Notifications from "expo-notifications";
 import { doc, updateDoc } from "firebase/firestore";
 import { auth, db } from "../../firebaseConfig";
+import { useMultiSelection } from "../../context/multiSelectionContext";
 
 export default function _layout() {
   // const [currentPage, setCurrentPage] = useState("home")
+  const { selectedChats, clearSelection } = useMultiSelection();
+
   useEffect(() => {
     const subscription = Notifications.addPushTokenListener(async (token) => {
       if (auth.currentUser?.uid) {
@@ -18,14 +21,25 @@ export default function _layout() {
 
     return () => subscription.remove();
   }, []);
+
   return (
     <Stack>
       <Stack.Screen
         name="home"
         options={{
-          header: () => (
-            <HomeHeader title="Chats" showProfile={true} showBack={false} />
-          ),
+          header: () =>
+            selectedChats.length > 0 ? (
+              <HomeHeader
+                title={`${selectedChats.length} Selected`}
+                showProfile={false}
+                showBack={true}
+                onBackPress={clearSelection} // Clear selection on back press
+                showDelete={true} // Pass delete option when items are selected
+                multiSelection={selectedChats.length>0}
+              />
+            ) : (
+              <HomeHeader title="Chats" showProfile={true} showBack={false} />
+            ),
         }}
       ></Stack.Screen>
       <Stack.Screen

@@ -19,6 +19,7 @@ import {
 } from "firebase/firestore";
 import { roomsRef, usersRef } from "../firebaseConfig";
 import { getRoomID } from "../utils/common";
+import { ToastAndroid } from "react-native";
 
 export const FriendContext = createContext();
 
@@ -26,7 +27,7 @@ export const FriendContextProvider = ({ children, userId }) => {
   const [friendRequests, setFriendRequests] = useState([]);
   const [fetchAllFriends, setAllFriends] = useState([]);
   const listeners = useRef(new Map());
-  
+
   useEffect(() => {
     // console.log("Running this")
     if (userId) {
@@ -34,7 +35,6 @@ export const FriendContextProvider = ({ children, userId }) => {
       getAllFriendDataWithMessages();
     }
   }, [userId]);
-
 
   // Fetch a user's friend IDs
   const fetchAllFrndID = async () => {
@@ -48,6 +48,7 @@ export const FriendContextProvider = ({ children, userId }) => {
     return [];
   };
 
+  // Fetch all friends with last message
   const fetchFriendLastMessages = async (friendIds) => {
     try {
       const friendsWithMessages = await Promise.all(
@@ -113,6 +114,7 @@ export const FriendContextProvider = ({ children, userId }) => {
     }
   };
 
+  // Fetch all friends including all required home data
   const getAllFriendDataWithMessages = async () => {
     try {
       // Fetch all friend IDs
@@ -123,7 +125,7 @@ export const FriendContextProvider = ({ children, userId }) => {
         friendIDs.map(async (friendId) => {
           // Subscribe to real-time updates for each friend
           subscribeToFriendUpdates(friendId);
-          
+
           // Fetch individual friend's data
           const friendDoc = await getDoc(doc(usersRef, friendId));
           if (friendDoc.exists()) {
@@ -132,15 +134,13 @@ export const FriendContextProvider = ({ children, userId }) => {
           return null; // Skip if data doesn't exist
         })
       );
-      
-      
+
       // Remove null entries (for non-existent friends)
       const validFriends = friendsWithDetails.filter(Boolean);
-      
+
       // Fetch the last message for each friend
       const friendsWithMessages = await fetchFriendLastMessages(friendIDs);
-      
-      
+
       // Combine friend details with their last message
       const combinedData = validFriends.map((friend) => {
         const lastMessage = friendsWithMessages.find(
@@ -151,7 +151,7 @@ export const FriendContextProvider = ({ children, userId }) => {
           lastMessage: lastMessage || null, // Include lastMessage or null
         };
       });
-      
+
       // Update the state with the combined data
       setAllFriends(combinedData);
       // console.log("Fetched : ",fetchAllFriends)
@@ -169,7 +169,8 @@ export const FriendContextProvider = ({ children, userId }) => {
       unsubscribe();
     };
   }, [userId]);
-  // Fetch all friend data
+
+  // Fetch all friend data for search
   const getAllFriendData = async () => {
     const friendIDs = await fetchAllFrndID();
 
@@ -186,6 +187,8 @@ export const FriendContextProvider = ({ children, userId }) => {
     setAllFriends((prevFriends) =>
       prevFriends.filter((friend) => friend.userId !== friendId)
     );
+
+    ToastAndroid.show("Removed as Friend.", ToastAndroid.SHORT)
     return result;
   };
 
@@ -213,9 +216,10 @@ export const FriendContextProvider = ({ children, userId }) => {
   const acceptRequest = async (userId, friendId) => {
     const result = await acceptFriendRequest(userId, friendId);
     await fetchFriendRequests(userId); // Refresh friend requests
+    subscribeToFriendUpdates(userId);
     return result;
   };
-
+  
   // Reject a friend request
   const delRequest = async (userId, incomingId) => {
     const result = await deleteFrndReqs(userId, incomingId);

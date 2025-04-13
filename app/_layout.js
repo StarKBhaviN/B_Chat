@@ -14,6 +14,7 @@ import * as Notifications from "expo-notifications";
 import { FriendContextProvider } from "../context/friendContext";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { AlertProvider } from "../context/alertContext";
+import { MultiSelectionProvider } from "../context/multiSelectionContext";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -35,7 +36,7 @@ const MainLayout = () => {
 
   // Store the start time when the app opens
   useEffect(() => {
-    startTimer()
+    startTimer();
     const checkPreviousSession = async () => {
       try {
         const lastActiveDate = await AsyncStorage.getItem("lastActiveDate");
@@ -85,7 +86,6 @@ const MainLayout = () => {
     // Set up a timer to update elapsed time every minute
     setInterval(async () => {
       if (timerRunning) {
-        
         const currentTime = Date.now();
         const timeSpentToday = currentTime - startTime + (elapsedTime || 0);
         console.log("Updating elapsed time every minute: ", timeSpentToday);
@@ -101,7 +101,7 @@ const MainLayout = () => {
     if (startTime) {
       const currentTime = Date.now();
       const timeSpentToday = currentTime - startTime + (elapsedTime || 0);
-      console.log(currentTime,startTime,elapsedTime)
+      console.log(currentTime, startTime, elapsedTime);
       console.log("Setting elpased time :", timeSpentToday);
       await AsyncStorage.setItem("elapsedTime", timeSpentToday.toString());
       setElapsedTime(timeSpentToday);
@@ -173,13 +173,15 @@ const MainLayout = () => {
 function RootWithAuth() {
   const { user } = useAuth();
   return (
-    <FriendContextProvider userId={user?.userId}>
-      <SafeAreaProvider>
-        <MenuProvider>
-          <MainLayout />
-        </MenuProvider>
-      </SafeAreaProvider>
-    </FriendContextProvider>
+    <MultiSelectionProvider>
+      <FriendContextProvider userId={user?.userId}>
+        <SafeAreaProvider>
+          <MenuProvider>
+            <MainLayout />
+          </MenuProvider>
+        </SafeAreaProvider>
+      </FriendContextProvider>
+    </MultiSelectionProvider>
   );
 }
 export default function RootLayout() {
