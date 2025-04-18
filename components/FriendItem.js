@@ -16,6 +16,7 @@ import { useAuth } from "../context/authContext";
 import { useRouter } from "expo-router";
 import ModalBottomSheet from "./Custom/ModalBottomSheet";
 import ShareProfile from "./ShareProfile";
+import ImageEnlarger from "./Custom/ImageEnlarger";
 
 export default function FriendItem({ item, removeAsFriend }) {
   const router = useRouter();
@@ -50,22 +51,24 @@ export default function FriendItem({ item, removeAsFriend }) {
       </View>
 
       <View className="flex flex-row items-center justify-center px-4">
-        <Image
-          source={
-            profileURL
-              ? profileURL
-              : "https://img.freepik.com/premium-photo/beautiful-european-girl-poses-outdoors_333900-28236.jpg?semt=ais_incoming"
-          }
-          style={{
-            height: hp(8),
-            width: hp(7),
-            borderRadius: 14,
-            marginTop: 4,
-            marginHorizontal: 2,
-          }}
-          placeholder={"blurhash"}
-          transition={500}
-        />
+        <ImageEnlarger>
+          <Image
+            source={
+              profileURL
+                ? profileURL
+                : "https://img.freepik.com/premium-photo/beautiful-european-girl-poses-outdoors_333900-28236.jpg?semt=ais_incoming"
+            }
+            style={{
+              height: hp(8),
+              width: hp(7),
+              borderRadius: 14,
+              marginTop: 4,
+              marginHorizontal: 2,
+            }}
+            placeholder={"blurhash"}
+            transition={500}
+          />
+        </ImageEnlarger>
 
         <View style={styles.iconContainer}>
           <View className="flex flex-row mb-2">

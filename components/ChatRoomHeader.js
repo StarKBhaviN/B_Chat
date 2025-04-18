@@ -11,6 +11,7 @@ import { formatMessageTime } from "../utils/common";
 import { doc, onSnapshot } from "firebase/firestore";
 import { db } from "../firebaseConfig";
 import { ThemeContext } from "../context/ThemeContext";
+import ImageEnlarger from "./Custom/ImageEnlarger";
 
 export default function ChatRoomHeader({ user, router }) {
   const { theme, colorScheme } = useContext(ThemeContext);
@@ -56,7 +57,7 @@ export default function ChatRoomHeader({ user, router }) {
 
   const expandedHeight = animation.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, hp(23)], // Adjust height as needed
+    outputRange: [0, hp(25)], // Adjust height as needed
   });
 
   return (
@@ -152,15 +153,17 @@ export default function ChatRoomHeader({ user, router }) {
               paddingHorizontal: 10,
             }}
           >
-            <Image
-              source={user?.profileURL}
-              style={{
-                height: hp(12),
-                aspectRatio: 1,
-                borderRadius: 100,
-                marginBottom: hp(0),
-              }}
-            />
+            <ImageEnlarger>
+              <Image
+                source={user?.profileURL}
+                style={{
+                  height: hp(12),
+                  aspectRatio: 1,
+                  borderRadius: 100,
+                  marginBottom: hp(0),
+                }}
+              />
+            </ImageEnlarger>
             <Text
               style={{
                 fontSize: hp(3),
