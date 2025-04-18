@@ -20,7 +20,7 @@ export default function ChatRoomHeader({ user, router }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const animation = useRef(new Animated.Value(0)).current;
 
-  // console.log(user)
+  console.log(user)
   useEffect(() => {
     if (user?.userId) {
       const unsubscribe = onSnapshot(

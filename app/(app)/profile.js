@@ -16,11 +16,12 @@ import { pickImage } from "../../utils/common";
 import axios from "axios";
 import { Avatar } from "react-native-elements";
 import { useAlert } from "../../context/alertContext";
+import ImageEnlarger from "../../components/Custom/ImageEnlarger";
 
 export default function Profile({ externalUserData, userId }) {
   const { theme, colorScheme } = useContext(ThemeContext);
   const { user, editProfile } = useAuth();
-  const {showAlert} = useAlert()
+  const { showAlert } = useAlert();
   const styles = createStyles(theme, colorScheme);
 
   const [userData, setUserData] = useState(externalUserData || user); // Store user data separately
@@ -28,6 +29,7 @@ export default function Profile({ externalUserData, userId }) {
   const [fieldName, setFieldName] = useState("");
   const [newImage, setNewImage] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [enlargeModal, setEnlargeModal] = useState(false);
 
   const isOwnProfile =
     !externalUserData || externalUserData?.userId === user?.userId;
@@ -44,7 +46,6 @@ export default function Profile({ externalUserData, userId }) {
       console.error("Error fetching user data:", error);
     }
   };
-
 
   useEffect(() => {
     if (externalUserData) {
@@ -68,7 +69,7 @@ export default function Profile({ externalUserData, userId }) {
       });
       data.append("upload_preset", "B_Chat");
       const resp = await axios.post(
-        "https://api.cloudinary.com/v1_1/dzjyqifhh/image/upload",
+        "https://api.cloudinary.com/v1_1/b-chat/image/upload",
         data,
         {
           headers: {
@@ -85,7 +86,7 @@ export default function Profile({ externalUserData, userId }) {
       setLoading(false);
       return imageUrl;
     } catch (error) {
-      console.error("Upload Error: ", error.message);
+      console.error("Upload Error: ", error);
       showAlert("Upload Failed. Try again.");
       setLoading(false);
     }
@@ -96,6 +97,7 @@ export default function Profile({ externalUserData, userId }) {
     setShowEditModal(true);
   };
 
+  console.log(userData);
   return (
     <View style={styles.container}>
       <View style={styles.profileCard}>
@@ -112,10 +114,16 @@ export default function Profile({ externalUserData, userId }) {
               containerStyle={{ backgroundColor: "#3d4db7" }}
             />
           ) : (
-            <Image
-              source={{ uri: userData?.profileURL || "https://t4.ftcdn.net/jpg/09/43/36/57/360_F_943365717_H0GnfeYj07d4oV1xPz8WHSZgcvgFoZdW.jpg" }}
-              style={styles.profileImage}
-            />
+            <ImageEnlarger>
+              <Image
+                source={{
+                  uri:
+                    userData?.profileURL ||
+                    "https://t4.ftcdn.net/jpg/09/43/36/57/360_F_943365717_H0GnfeYj07d4oV1xPz8WHSZgcvgFoZdW.jpg",
+                }}
+                style={styles.profileImage}
+              />
+            </ImageEnlarger>
           )}
           {isOwnProfile && (
             <AntDesign
@@ -130,7 +138,6 @@ export default function Profile({ externalUserData, userId }) {
                 right: 0,
                 backgroundColor: colorScheme === "dark" ? "#092635" : "#FAF0E6",
               }}
-              disabled
             />
           )}
         </View>

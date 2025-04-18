@@ -40,6 +40,7 @@ import { ThemeContext } from "../../context/ThemeContext";
 import { Image } from "expo-image";
 import HelloBee from "../../assets/images/HelloBee.png";
 import { useFriendContext } from "../../context/friendContext";
+import ImageEnlarger from "../../components/Custom/ImageEnlarger";
 // import { useNotification } from "../../context/NotificationContext";
 
 export default function Home() {
@@ -70,7 +71,6 @@ export default function Home() {
     // console.log("Fetch all :",fetchAllFriends)
     setUsers(fetchAllFriends);
   }, [fetchAllFriends]);
-  
 
   // Optimize listening to message updates
   const listenToFriendMessages = useCallback(() => {
@@ -144,6 +144,7 @@ export default function Home() {
         </View>
       )}
 
+      {/* <ImageEnlarger /> */}
       <TouchableOpacity
         style={styles.touchBtn}
         onPress={() => setShowModal(true)}
